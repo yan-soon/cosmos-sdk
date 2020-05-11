@@ -659,6 +659,7 @@ func testTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 
 func anteHandlerTxTest(t *testing.T, capKey sdk.StoreKey, storeKey []byte) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		store := ctx.KVStore(capKey)
 		txTest := tx.(txTest)
 
@@ -690,6 +691,7 @@ func counterEvent(evType string, msgCount int64) sdk.Events {
 
 func handlerMsgCounter(t *testing.T, capKey sdk.StoreKey, deliverKey []byte) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		store := ctx.KVStore(capKey)
 		var msgCount int64
 
@@ -700,12 +702,21 @@ func handlerMsgCounter(t *testing.T, capKey sdk.StoreKey, deliverKey []byte) sdk
 			}
 
 			msgCount = m.Counter
-
 		case *msgCounter2:
 			msgCount = m.Counter
 		}
 
-		return incrementingCounter(t, store, deliverKey, msgCount)
+		ctx.EventManager().EmitEvents(
+			counterEvent(sdk.EventTypeMessage, msgCount),
+		)
+
+		res, err := incrementingCounter(t, store, deliverKey, msgCount)
+		if err != nil {
+			return nil, err
+		}
+
+		res.Events = ctx.EventManager().Events()
+		return res, nil
 	}
 }
 
@@ -768,11 +779,12 @@ func TestCheckTx(t *testing.T) {
 	registerTestCodec(codec)
 
 	for i := int64(0); i < nTxs; i++ {
-		tx := newTxCounter(i, 0)
+		tx := newTxCounter(i, 0) // no messages
 		txBytes, err := codec.MarshalBinaryLengthPrefixed(tx)
 		require.NoError(t, err)
 		r := app.CheckTx(abci.RequestCheckTx{Tx: txBytes})
-		assert.True(t, r.IsOK(), fmt.Sprintf("%v", r))
+		require.Empty(t, r.GetEvents())
+		require.True(t, r.IsOK(), fmt.Sprintf("%v", r))
 	}
 
 	checkStateStore := app.checkState.ctx.KVStore(capKey1)
@@ -828,6 +840,10 @@ func TestDeliverTx(t *testing.T) {
 
 			res := app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
 			require.True(t, res.IsOK(), fmt.Sprintf("%v", res))
+			events := res.GetEvents()
+			require.Len(t, events, 3, "should contain ante handler, message type and counter events respectively")
+			require.Equal(t, counterEvent("ante_handler", counter).ToABCIEvents()[0], events[0], "ante handler event")
+			require.Equal(t, counterEvent(sdk.EventTypeMessage, counter).ToABCIEvents()[0], events[2], "msg handler update counter event")
 		}
 
 		app.EndBlock(abci.RequestEndBlock{})
