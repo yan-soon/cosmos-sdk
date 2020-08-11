@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,10 +28,11 @@ type TendermintTestSuite struct {
 	suite.Suite
 
 	ctx      sdk.Context
-	aminoCdc *codec.Codec
+	aminoCdc *codec.LegacyAmino
 	cdc      codec.Marshaler
 	privVal  tmtypes.PrivValidator
 	valSet   *tmtypes.ValidatorSet
+	valsHash tmbytes.HexBytes
 	header   ibctmtypes.Header
 	now      time.Time
 }
@@ -39,7 +41,7 @@ func (suite *TendermintTestSuite) SetupTest() {
 	checkTx := false
 	app := simapp.Setup(checkTx)
 
-	suite.aminoCdc = app.Codec()
+	suite.aminoCdc = app.LegacyAmino()
 	suite.cdc = app.AppCodec()
 
 	suite.now = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
@@ -50,7 +52,8 @@ func (suite *TendermintTestSuite) SetupTest() {
 
 	val := tmtypes.NewValidator(pubKey, 10)
 	suite.valSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{val})
-	suite.header = ibctmtypes.CreateTestHeader(chainID, height, suite.now, suite.valSet, []tmtypes.PrivValidator{suite.privVal})
+	suite.valsHash = suite.valSet.Hash()
+	suite.header = ibctmtypes.CreateTestHeader(chainID, height, height-1, suite.now, suite.valSet, suite.valSet, []tmtypes.PrivValidator{suite.privVal})
 	suite.ctx = app.BaseApp.NewContext(checkTx, abci.Header{Height: 1, Time: suite.now})
 }
 
