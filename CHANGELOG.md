@@ -35,6 +35,13 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## [v0.39.1-patch-4]
+
+* (types) [\#7027](https://github.com/cosmos/cosmos-sdk/pull/7027) `Coin(s)` and `DecCoin(s)` updates:
+  * Bump denomination max length to 128
+  * Allow unicode letters and numbers in denominations
+  * Added `Validate` function that returns a descriptive error
+
 ## [v0.39.2-a]
 
 ### Improvements
