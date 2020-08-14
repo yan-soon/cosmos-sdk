@@ -543,6 +543,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		startingGas = ctx.BlockGasMeter().GasConsumed()
 	}
 
+	var events sdk.Events
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
@@ -564,7 +565,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 				)
 			}
 
-			result = nil
+			result.Events = events
 		}
 
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
@@ -592,7 +593,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		return sdk.GasInfo{}, nil, err
 	}
 
-	var events sdk.Events
 	if app.anteHandler != nil {
 		var anteCtx sdk.Context
 		var msCache sdk.CacheMultiStore
@@ -625,7 +625,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		gasWanted = ctx.GasMeter().Limit()
 
 		if err != nil {
-			return gInfo, nil, err
+			return gInfo, result, err
 		}
 
 		msCache.Write()
@@ -642,13 +642,14 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	result, err = app.runMsgs(runMsgCtx, msgs, mode)
 	if err == nil && mode == runTxModeDeliver {
 		msCache.Write()
+	}
 
+	if mode == runTxModeDeliver {
 		if len(events) > 0 {
 			// append the events in the order of occurrence
 			result.Events = append(events, result.Events...)
 		}
 	}
-
 	return gInfo, result, err
 }
 
