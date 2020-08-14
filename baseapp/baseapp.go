@@ -524,6 +524,8 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 // returned if the tx does not run out of gas and if all the messages are valid
 // and execute successfully. An error is returned otherwise.
 func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.GasInfo, result *sdk.Result, err error) {
+	result = &sdk.Result{}
+
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
@@ -535,7 +537,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	// only run the tx if there is block gas remaining
 	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
 		gInfo = sdk.GasInfo{GasUsed: ctx.BlockGasMeter().GasConsumed()}
-		return gInfo, nil, sdkerrors.Wrap(sdkerrors.ErrOutOfGas, "no block gas left to run tx")
+		return gInfo, result, sdkerrors.Wrap(sdkerrors.ErrOutOfGas, "no block gas left to run tx")
 	}
 
 	var startingGas uint64
@@ -543,6 +545,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		startingGas = ctx.BlockGasMeter().GasConsumed()
 	}
 
+	var events sdk.Events
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
@@ -564,7 +567,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 				)
 			}
 
-			result = nil
+			result.Events = events
 		}
 
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
@@ -589,10 +592,9 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 
 	msgs := tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
-		return sdk.GasInfo{}, nil, err
+		return sdk.GasInfo{}, result, err
 	}
 
-	var events sdk.Events
 	if app.anteHandler != nil {
 		var anteCtx sdk.Context
 		var msCache sdk.CacheMultiStore
@@ -625,7 +627,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		gasWanted = ctx.GasMeter().Limit()
 
 		if err != nil {
-			return gInfo, nil, err
+			return gInfo, result, err
 		}
 
 		msCache.Write()
@@ -646,6 +648,12 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		if len(events) > 0 {
 			// append the events in the order of occurrence
 			result.Events = append(events, result.Events...)
+		}
+	}
+
+	if err != nil && mode == runTxModeDeliver {
+		result = &sdk.Result{
+			Events: events,
 		}
 	}
 
