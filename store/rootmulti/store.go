@@ -169,9 +169,8 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 		initialVersion := int64(0)
 		commitID := rs.getCommitID(infos, key.Name())
 
-		if upgrades.IsCreated(key.Name()) {
-			commitID.Version = ver
-			initialVersion = ver
+		if upgrades.IsCreated(key.Name()) && commitID.Version == 0 {
+			initialVersion = ver + 1
 		}
 
 		// Load it
