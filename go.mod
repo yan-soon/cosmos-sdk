@@ -2,6 +2,8 @@ go 1.13
 
 module github.com/cosmos/cosmos-sdk
 
+replace github.com/tendermint/iavl => github.com/Switcheo/iavl v0.14.1-0.20200828041603-dbbd934b97ec
+
 require (
 	github.com/99designs/keyring v1.1.3
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
@@ -18,9 +20,7 @@ require (
 	github.com/pelletier/go-toml v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.6
-	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cobra v1.0.0
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.6.1
@@ -30,7 +30,6 @@ require (
 	github.com/tendermint/iavl v0.14.0
 	github.com/tendermint/tendermint v0.33.7
 	github.com/tendermint/tm-db v0.5.1
-	google.golang.org/grpc v1.30.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
 
