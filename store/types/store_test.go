@@ -7,6 +7,10 @@ import (
 )
 
 func TestStoreUpgrades(t *testing.T) {
+	type toCreate struct {
+		key    string
+		create bool
+	}
 	type toDelete struct {
 		key    string
 		delete bool
@@ -18,23 +22,28 @@ func TestStoreUpgrades(t *testing.T) {
 
 	cases := map[string]struct {
 		upgrades     *StoreUpgrades
+		expectCreate []toCreate
 		expectDelete []toDelete
 		expectRename []toRename
 	}{
 		"empty upgrade": {
+			expectCreate: []toCreate{},
 			expectDelete: []toDelete{{"foo", false}},
 			expectRename: []toRename{{"foo", ""}},
 		},
 		"simple matches": {
 			upgrades: &StoreUpgrades{
+				Created: []string{"new"},
 				Deleted: []string{"foo"},
 				Renamed: []StoreRename{{"bar", "baz"}},
 			},
+			expectCreate: []toCreate{{"new", true}},
 			expectDelete: []toDelete{{"foo", true}, {"bar", false}, {"baz", false}},
 			expectRename: []toRename{{"foo", ""}, {"bar", ""}, {"baz", "bar"}},
 		},
 		"many data points": {
 			upgrades: &StoreUpgrades{
+				Created: []string{"new", "awesome", "stores"},
 				Deleted: []string{"one", "two", "three", "four", "five"},
 				Renamed: []StoreRename{{"old", "new"}, {"white", "blue"}, {"black", "orange"}, {"fun", "boring"}},
 			},
@@ -46,6 +55,9 @@ func TestStoreUpgrades(t *testing.T) {
 	for name, tc := range cases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			for _, d := range tc.expectCreate {
+				assert.Equal(t, tc.upgrades.IsCreated(d.key), d.create)
+			}
 			for _, d := range tc.expectDelete {
 				assert.Equal(t, tc.upgrades.IsDeleted(d.key), d.delete)
 			}
