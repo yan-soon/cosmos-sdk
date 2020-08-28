@@ -206,7 +206,11 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 
 	gInfo, result, err := app.runTx(runTxModeDeliver, req.Tx, tx)
 	if err != nil {
-		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed, result.Events.ToABCIEvents(), app.trace)
+		var events []abci.Event
+		if result != nil && result.Events != nil {
+			events = result.Events.ToABCIEvents()
+		}
+		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed, events, app.trace)
 	}
 
 	return abci.ResponseDeliverTx{
