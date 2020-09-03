@@ -266,9 +266,13 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 		app.halt()
 	}
 
-	return abci.ResponseCommit{
+	resp := abci.ResponseCommit{
 		Data: commitID.Hash,
 	}
+	if app.retainBlocks > 0 && header.Height >= app.retainBlocks {
+		resp.RetainHeight = header.Height - app.retainBlocks + 1
+	}
+	return resp
 }
 
 // halt attempts to gracefully shutdown the node via SIGINT and SIGTERM falling

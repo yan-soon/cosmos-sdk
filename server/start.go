@@ -37,6 +37,8 @@ const (
 	FlagPruningKeepRecent = "pruning-keep-recent"
 	FlagPruningKeepEvery  = "pruning-keep-every"
 	FlagPruningInterval   = "pruning-interval"
+
+	FlagRetainBlocks = "retain-blocks"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with
@@ -108,6 +110,11 @@ which accepts a path for the resulting pprof file.
 	viper.BindPFlag(FlagPruningKeepRecent, cmd.Flags().Lookup(FlagPruningKeepRecent))
 	viper.BindPFlag(FlagPruningKeepEvery, cmd.Flags().Lookup(FlagPruningKeepEvery))
 	viper.BindPFlag(FlagPruningInterval, cmd.Flags().Lookup(FlagPruningInterval))
+
+	cmd.Flags().Int64(
+		FlagRetainBlocks, 0,
+		"Number of recent blocks to retain on disk",
+	)
 
 	// add support for all Tendermint-specific command line options
 	tcmd.AddNodeFlags(cmd)
