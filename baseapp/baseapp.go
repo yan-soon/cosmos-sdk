@@ -109,6 +109,8 @@ type BaseApp struct { // nolint: maligned
 
 	// trace set will return full stack traces for errors in ABCI Log field
 	trace bool
+
+	retainBlocks int64
 }
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
@@ -360,6 +362,10 @@ func (app *BaseApp) setInterBlockCache(cache sdk.MultiStorePersistentCache) {
 
 func (app *BaseApp) setTrace(trace bool) {
 	app.trace = trace
+}
+
+func (app *BaseApp) setRetainBlocks(retainBlocks int64) {
+	app.retainBlocks = retainBlocks
 }
 
 // Router returns the router of the BaseApp.

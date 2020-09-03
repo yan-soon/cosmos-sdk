@@ -49,6 +49,10 @@ func SetTrace(trace bool) func(*BaseApp) {
 	return func(app *BaseApp) { app.setTrace(trace) }
 }
 
+func SetRetainBlocks(retainBlocks int64) func(*BaseApp) {
+	return func(bap *BaseApp) { bap.setRetainBlocks(retainBlocks) }
+}
+
 func (app *BaseApp) SetName(name string) {
 	if app.sealed {
 		panic("SetName() on sealed BaseApp")

@@ -39,6 +39,9 @@ type BaseConfig struct {
 
 	// InterBlockCache enables inter-block caching.
 	InterBlockCache bool `mapstructure:"inter-block-cache"`
+
+	// Number of recent blocks to retain on disk
+	RetainBlocks int64 `mapstructure:"retain-blocks"`
 }
 
 // Config defines the server's top level configuration
@@ -83,6 +86,7 @@ func DefaultConfig() *Config {
 			PruningKeepRecent: "0",
 			PruningKeepEvery:  "0",
 			PruningInterval:   "0",
+			RetainBlocks:      0,
 		},
 	}
 }

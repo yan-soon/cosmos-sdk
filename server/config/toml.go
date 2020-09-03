@@ -44,6 +44,9 @@ halt-time = {{ .BaseConfig.HaltTime }}
 
 # InterBlockCache enables inter-block caching.
 inter-block-cache = {{ .BaseConfig.InterBlockCache }}
+
+# Number of recent blocks to retain on disk
+retain-blocks = {{ .BaseConfig.RetainBlocks }}
 `
 
 var configTemplate *template.Template
