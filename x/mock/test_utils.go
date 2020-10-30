@@ -64,7 +64,7 @@ func CheckGenTx(
 		require.NotNil(t, res)
 	} else {
 		require.Error(t, err)
-		require.Nil(t, res)
+		require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, res)
 	}
 
 	return gInfo, res, err
@@ -105,7 +105,7 @@ func SignCheckDeliver(
 		require.NotNil(t, res)
 	} else {
 		require.Error(t, err)
-		require.Nil(t, res)
+		require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, res)
 	}
 
 	app.EndBlock(abci.RequestEndBlock{})

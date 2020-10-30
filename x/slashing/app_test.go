@@ -155,6 +155,6 @@ func TestSlashingMsgs(t *testing.T) {
 	header = abci.Header{Height: mapp.LastBlockHeight() + 1}
 	_, res, err := mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, []sdk.Msg{unjailMsg}, []uint64{0}, []uint64{1}, false, false, priv1)
 	require.Error(t, err)
-	require.Nil(t, res)
+	require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, res)
 	require.True(t, errors.Is(ErrValidatorNotJailed, err))
 }

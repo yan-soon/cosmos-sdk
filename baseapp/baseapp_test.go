@@ -1021,7 +1021,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 		emptyTx := &txTest{}
 		_, result, err := app.Deliver(emptyTx)
 		require.Error(t, err)
-		require.Nil(t, result)
+		require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, result)
 
 		space, code, _ := sdkerrors.ABCIInfo(err, false)
 		require.EqualValues(t, sdkerrors.ErrInvalidRequest.Codespace(), space, err)
@@ -1065,7 +1065,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 		unknownRouteTx := txTest{[]sdk.Msg{msgNoRoute{}}, 0, false}
 		_, result, err := app.Deliver(unknownRouteTx)
 		require.Error(t, err)
-		require.Nil(t, result)
+		require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, result)
 
 		space, code, _ := sdkerrors.ABCIInfo(err, false)
 		require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), space, err)
@@ -1074,7 +1074,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 		unknownRouteTx = txTest{[]sdk.Msg{msgCounter{}, msgNoRoute{}}, 0, false}
 		_, result, err = app.Deliver(unknownRouteTx)
 		require.Error(t, err)
-		require.Nil(t, result)
+		require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, result)
 
 		space, code, _ = sdkerrors.ABCIInfo(err, false)
 		require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), space, err)
@@ -1179,7 +1179,7 @@ func TestTxGasLimits(t *testing.T) {
 			require.NotNil(t, result, fmt.Sprintf("%d: %v, %v", i, tc, err))
 		} else {
 			require.Error(t, err)
-			require.Nil(t, result)
+			require.EqualValues(t, &sdk.Result{Data: nil, Log: "", Events: sdk.Events{}}, result)
 
 			space, code, _ := sdkerrors.ABCIInfo(err, false)
 			require.EqualValues(t, sdkerrors.ErrOutOfGas.Codespace(), space, err)
@@ -1266,7 +1266,8 @@ func TestMaxBlockGasLimits(t *testing.T) {
 			// check for failed transactions
 			if tc.fail && (j+1) > tc.failAfterDeliver {
 				require.Error(t, err, fmt.Sprintf("tc #%d; result: %v, err: %s", i, result, err))
-				require.Nil(t, result, fmt.Sprintf("tc #%d; result: %v, err: %s", i, result, err))
+				require.NotNil(t, result)
+				require.EqualValues(t, sdk.Events{}, result.Events)
 
 				space, code, _ := sdkerrors.ABCIInfo(err, false)
 				require.EqualValues(t, sdkerrors.ErrOutOfGas.Codespace(), space, err)
@@ -1333,7 +1334,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	res = app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
-	require.Empty(t, res.Events)
+	require.Equal(t, len(res.Events), 1)
 	require.False(t, res.IsOK(), fmt.Sprintf("%v", res))
 
 	ctx = app.getState(runTxModeDeliver).ctx

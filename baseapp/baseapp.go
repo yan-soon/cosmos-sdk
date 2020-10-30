@@ -530,7 +530,7 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 // returned if the tx does not run out of gas and if all the messages are valid
 // and execute successfully. An error is returned otherwise.
 func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.GasInfo, result *sdk.Result, err error) {
-	result = &sdk.Result{}
+	result = &sdk.Result{Events: sdk.EmptyEvents()}
 
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
@@ -551,7 +551,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		startingGas = ctx.BlockGasMeter().GasConsumed()
 	}
 
-	var events sdk.Events
+	events := sdk.EmptyEvents()
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
