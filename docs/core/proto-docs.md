@@ -264,6 +264,8 @@
     - [QueryDelegatorValidatorsResponse](#cosmos.distribution.v1beta1.QueryDelegatorValidatorsResponse)
     - [QueryDelegatorWithdrawAddressRequest](#cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressRequest)
     - [QueryDelegatorWithdrawAddressResponse](#cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressResponse)
+    - [QueryLiquidityProviderRewardsRequest](#cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsRequest)
+    - [QueryLiquidityProviderRewardsResponse](#cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsResponse)
     - [QueryParamsRequest](#cosmos.distribution.v1beta1.QueryParamsRequest)
     - [QueryParamsResponse](#cosmos.distribution.v1beta1.QueryParamsResponse)
     - [QueryValidatorCommissionRequest](#cosmos.distribution.v1beta1.QueryValidatorCommissionRequest)
@@ -3570,7 +3572,8 @@ FeePool is the global fee pool for distribution.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `community_pool` | [cosmos.base.v1beta1.DecCoin](#cosmos.base.v1beta1.DecCoin) | repeated |  |
+| `community_pool` | [cosmos.base.v1beta1.DecCoin](#cosmos.base.v1beta1.DecCoin) | repeated | pool for dev fund yet to be distributed |
+| `liquidity_provider_pool` | [cosmos.base.v1beta1.DecCoin](#cosmos.base.v1beta1.DecCoin) | repeated | pool for lps yet to be distributed |
 
 
 
@@ -3588,6 +3591,7 @@ Params defines the set of params for the distribution module.
 | `community_tax` | [string](#string) |  |  |
 | `base_proposer_reward` | [string](#string) |  |  |
 | `bonus_proposer_reward` | [string](#string) |  |  |
+| `liquidity_provider_reward` | [string](#string) |  |  |
 | `withdraw_addr_enabled` | [bool](#bool) |  |  |
 
 
@@ -4039,6 +4043,33 @@ Query/DelegatorWithdrawAddress RPC method.
 
 
 
+<a name="cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsRequest"></a>
+
+### QueryLiquidityProviderRewardsRequest
+QueryLiquidityProviderRewardsRequest is the request type for the Query/LiquidityProviderRewardsRequest RPC
+method.
+
+
+
+
+
+
+<a name="cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsResponse"></a>
+
+### QueryLiquidityProviderRewardsResponse
+QueryLiquidityProviderRewardsResponse is the response type for the Query/LiquidityProviderRewardsRequest
+RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `pool` | [cosmos.base.v1beta1.DecCoin](#cosmos.base.v1beta1.DecCoin) | repeated | pool defines community pool's coins. |
+
+
+
+
+
+
 <a name="cosmos.distribution.v1beta1.QueryParamsRequest"></a>
 
 ### QueryParamsRequest
@@ -4186,6 +4217,7 @@ Query defines the gRPC querier service for distribution module.
 | `DelegatorValidators` | [QueryDelegatorValidatorsRequest](#cosmos.distribution.v1beta1.QueryDelegatorValidatorsRequest) | [QueryDelegatorValidatorsResponse](#cosmos.distribution.v1beta1.QueryDelegatorValidatorsResponse) | DelegatorValidators queries the validators of a delegator. | GET|/cosmos/distribution/v1beta1/delegators/{delegator_address}/validators|
 | `DelegatorWithdrawAddress` | [QueryDelegatorWithdrawAddressRequest](#cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressRequest) | [QueryDelegatorWithdrawAddressResponse](#cosmos.distribution.v1beta1.QueryDelegatorWithdrawAddressResponse) | DelegatorWithdrawAddress queries withdraw address of a delegator. | GET|/cosmos/distribution/v1beta1/delegators/{delegator_address}/withdraw_address|
 | `CommunityPool` | [QueryCommunityPoolRequest](#cosmos.distribution.v1beta1.QueryCommunityPoolRequest) | [QueryCommunityPoolResponse](#cosmos.distribution.v1beta1.QueryCommunityPoolResponse) | CommunityPool queries the community pool coins. | GET|/cosmos/distribution/v1beta1/community_pool|
+| `LiquidityProviderRewards` | [QueryLiquidityProviderRewardsRequest](#cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsRequest) | [QueryLiquidityProviderRewardsResponse](#cosmos.distribution.v1beta1.QueryLiquidityProviderRewardsResponse) | LiquidityProviderRewards queries the outstanding liquidity provider reward coins. | GET|/cosmos/distribution/v1beta1/liquidity_provider_rewards|
 
  <!-- end services -->
 

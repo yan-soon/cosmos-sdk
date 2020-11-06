@@ -11,7 +11,7 @@ import (
 	v039crisis "github.com/cosmos/cosmos-sdk/x/crisis/legacy/v039"
 	v040crisis "github.com/cosmos/cosmos-sdk/x/crisis/legacy/v040"
 	v036distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v036"
-	v038distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v038"
+	v039distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v039"
 	v040distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v040"
 	v038evidence "github.com/cosmos/cosmos-sdk/x/evidence/legacy/v038"
 	v040evidence "github.com/cosmos/cosmos-sdk/x/evidence/legacy/v040"
@@ -99,13 +99,13 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	}
 
 	// Migrate x/distribution.
-	if appState[v038distr.ModuleName] != nil {
+	if appState[v039distr.ModuleName] != nil {
 		// unmarshal relative source genesis application state
-		var distributionGenState v038distr.GenesisState
-		v039Codec.MustUnmarshalJSON(appState[v038distr.ModuleName], &distributionGenState)
+		var distributionGenState v039distr.GenesisState
+		v039Codec.MustUnmarshalJSON(appState[v039distr.ModuleName], &distributionGenState)
 
 		// delete deprecated x/distribution genesis state
-		delete(appState, v038distr.ModuleName)
+		delete(appState, v039distr.ModuleName)
 
 		// Migrate relative source genesis application state and marshal it into
 		// the respective key.

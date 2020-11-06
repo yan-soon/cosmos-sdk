@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -31,6 +32,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryValidatorSlashes(),
 		GetCmdQueryDelegatorRewards(),
 		GetCmdQueryCommunityPool(),
+		GetCmdQueryLiquidityProviderRewards(),
 	)
 
 	return distQueryCmd
@@ -318,4 +320,36 @@ $ %s query distribution community-pool
 
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
+}
+
+// GetCmdQueryLiquidityProviderRewards returns the command for fetching outstanding liquidity provider rewards.
+func GetCmdQueryLiquidityProviderRewards() *cobra.Command {
+	return &cobra.Command{
+		Use:   "liquidity-provider-rewards",
+		Args:  cobra.NoArgs,
+		Short: "Query the amount of coins in the liquidity provider reward pool",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query the amount of coins in the liquidity provider reward pool which that is pending distribution.
+
+Example:
+$ %s query distribution liquidity-provider-rewards-pool
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.LiquidityProviderRewards(context.Background(), &types.QueryLiquidityProviderRewardsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
 }

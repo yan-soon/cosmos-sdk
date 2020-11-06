@@ -70,10 +70,11 @@ func (suite *KeeperTestSuite) TestGRPCParams() {
 			"valid request",
 			func() {
 				params = types.Params{
-					CommunityTax:        sdk.NewDecWithPrec(3, 1),
-					BaseProposerReward:  sdk.NewDecWithPrec(2, 1),
-					BonusProposerReward: sdk.NewDecWithPrec(1, 1),
-					WithdrawAddrEnabled: true,
+					CommunityTax:            sdk.NewDecWithPrec(3, 1),
+					BaseProposerReward:      sdk.NewDecWithPrec(2, 1),
+					BonusProposerReward:     sdk.NewDecWithPrec(1, 1),
+					LiquidityProviderReward: sdk.NewDecWithPrec(1, 1),
+					WithdrawAddrEnabled:     true,
 				}
 
 				app.DistrKeeper.SetParams(ctx, params)

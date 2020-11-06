@@ -25,6 +25,11 @@ message Params {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
+  string liquidity_provider_reward = 5 [
+    (gogoproto.moretags)   = "yaml:\"liquidity_provider_reward\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
   bool withdraw_addr_enabled = 4 [(gogoproto.moretags) = "yaml:\"withdraw_addr_enabled\""];
 }
 
@@ -93,10 +98,17 @@ message ValidatorSlashEvents {
 
 // FeePool is the global fee pool for distribution.
 message FeePool {
+  // pool for dev fund yet to be distributed
   repeated cosmos.base.v1beta1.DecCoin community_pool = 1 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (gogoproto.moretags)     = "yaml:\"community_pool\""
+  ];
+  // pool for lps yet to be distributed
+  repeated cosmos.base.v1beta1.DecCoin liquidity_provider_pool = 2 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.moretags)     = "yaml:\"liquidity_provider_pool\""
   ];
 }
 

@@ -1,16 +1,16 @@
 package v040
 
 import (
-	v038distribution "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v038"
+	v039distribution "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v039"
 	v040distribution "github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
-// Migrate accepts exported x/distribution genesis state from v0.38 and migrates it
+// Migrate accepts exported x/distribution genesis state from v0.39 (patch-4) and migrates it
 // to v0.40 x/distribution genesis state. The migration includes:
 //
 // - Convert addresses from bytes to bech32 strings.
 // - Re-encode in v0.40 GenesisState.
-func Migrate(oldDistributionState v038distribution.GenesisState) *v040distribution.GenesisState {
+func Migrate(oldDistributionState v039distribution.GenesisState) *v040distribution.GenesisState {
 	newDelegatorWithdrawInfos := make([]v040distribution.DelegatorWithdrawInfo, len(oldDistributionState.DelegatorWithdrawInfos))
 	for i, oldDelegatorWithdrawInfo := range oldDistributionState.DelegatorWithdrawInfos {
 		newDelegatorWithdrawInfos[i] = v040distribution.DelegatorWithdrawInfo{
@@ -88,13 +88,15 @@ func Migrate(oldDistributionState v038distribution.GenesisState) *v040distributi
 
 	return &v040distribution.GenesisState{
 		Params: v040distribution.Params{
-			CommunityTax:        oldDistributionState.Params.CommunityTax,
-			BaseProposerReward:  oldDistributionState.Params.BaseProposerReward,
-			BonusProposerReward: oldDistributionState.Params.BonusProposerReward,
-			WithdrawAddrEnabled: oldDistributionState.Params.WithdrawAddrEnabled,
+			CommunityTax:            oldDistributionState.Params.CommunityTax,
+			BaseProposerReward:      oldDistributionState.Params.BaseProposerReward,
+			BonusProposerReward:     oldDistributionState.Params.BonusProposerReward,
+			LiquidityProviderReward: oldDistributionState.Params.LiquidityProviderReward,
+			WithdrawAddrEnabled:     oldDistributionState.Params.WithdrawAddrEnabled,
 		},
 		FeePool: v040distribution.FeePool{
-			CommunityPool: oldDistributionState.FeePool.CommunityPool,
+			CommunityPool:         oldDistributionState.FeePool.CommunityPool,
+			LiquidityProviderPool: oldDistributionState.FeePool.LiquidityProviderPool,
 		},
 		DelegatorWithdrawInfos:          newDelegatorWithdrawInfos,
 		PreviousProposer:                oldDistributionState.PreviousProposer.String(),

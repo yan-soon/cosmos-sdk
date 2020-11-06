@@ -7,6 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	v034distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v034"
 	v036distr "github.com/cosmos/cosmos-sdk/x/distribution/legacy/v036"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // DONTCOVER
@@ -36,6 +38,20 @@ type (
 		WithdrawAddrEnabled bool    `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
 	}
 )
+
+// ParamSetPairs returns the parameter set pairs. Validation functions are removed.
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(distr.ParamStoreKeyCommunityTax, &p.CommunityTax, noValidation),
+		paramtypes.NewParamSetPair(distr.ParamStoreKeyBaseProposerReward, &p.BaseProposerReward, noValidation),
+		paramtypes.NewParamSetPair(distr.ParamStoreKeyBonusProposerReward, &p.BonusProposerReward, noValidation),
+		paramtypes.NewParamSetPair(distr.ParamStoreKeyWithdrawAddrEnabled, &p.WithdrawAddrEnabled, noValidation),
+	}
+}
+
+func noValidation(i interface{}) error {
+	return nil
+}
 
 func NewGenesisState(
 	params Params, feePool v034distr.FeePool, dwis []v034distr.DelegatorWithdrawInfo, pp sdk.ConsAddress,
