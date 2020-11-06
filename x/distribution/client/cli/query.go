@@ -34,6 +34,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdQueryValidatorSlashes(queryRoute, cdc),
 		GetCmdQueryDelegatorRewards(queryRoute, cdc),
 		GetCmdQueryCommunityPool(queryRoute, cdc),
+		GetCmdQueryLiquidityProviderRewards(queryRoute, cdc),
 	)...)
 
 	return distQueryCmd
@@ -279,6 +280,36 @@ $ %s query distribution community-pool
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/community_pool", queryRoute), nil)
+			if err != nil {
+				return err
+			}
+
+			var result sdk.DecCoins
+			cdc.MustUnmarshalJSON(res, &result)
+			return cliCtx.PrintOutput(result)
+		},
+	}
+}
+
+// GetCmdQueryLiquidityProviderRewards returns the command for fetching outstanding liquidity provider rewards.
+func GetCmdQueryLiquidityProviderRewards(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "liquidity-provider-rewards",
+		Args:  cobra.NoArgs,
+		Short: "Query the amount of coins in the liquidity provider reward pool",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query the amount of coins in the liquidity provider reward pool which that is pending distribution.
+
+Example:
+$ %s query distribution liquidity-provider-rewards-pool
+`,
+				version.ClientName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/liquidity_provider_rewards", queryRoute), nil)
 			if err != nil {
 				return err
 			}

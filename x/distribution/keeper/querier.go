@@ -42,6 +42,9 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryCommunityPool:
 			return queryCommunityPool(ctx, path[1:], req, k)
 
+		case types.QueryLiquidityProviderRewards:
+			return queryLiquidityProviderRewards(ctx, path[1:], req, k)
+
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
 		}
@@ -247,6 +250,20 @@ func queryCommunityPool(ctx sdk.Context, _ []string, req abci.RequestQuery, k Ke
 	}
 
 	bz, err := k.cdc.MarshalJSON(pool)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
+	return bz, nil
+}
+
+func queryLiquidityProviderRewards(ctx sdk.Context, _ []string, req abci.RequestQuery, k Keeper) ([]byte, error) {
+	coins := k.GetFeePoolLiquidityProviderCoins(ctx)
+	if coins == nil {
+		coins = sdk.DecCoins{}
+	}
+
+	bz, err := k.cdc.MarshalJSON(coins)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

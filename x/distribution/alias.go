@@ -23,6 +23,7 @@ const (
 	QueryDelegatorValidators         = types.QueryDelegatorValidators
 	QueryWithdrawAddr                = types.QueryWithdrawAddr
 	QueryCommunityPool               = types.QueryCommunityPool
+	QueryLiquidityProviderRewards    = types.QueryLiquidityProviderRewards
 	DefaultParamspace                = types.DefaultParamspace
 	TypeMsgFundCommunityPool         = types.TypeMsgFundCommunityPool
 )
