@@ -79,7 +79,8 @@ func (k Keeper) AllocateTokens(
 
 	// calculate fraction allocated to validators
 	communityTax := k.GetCommunityTax(ctx)
-	voteMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(communityTax)
+	liquidityProviderReward := k.GetLiquidityProviderReward(ctx)
+	voteMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(communityTax).Sub(liquidityProviderReward)
 
 	// allocate tokens proportionally to voting power
 	// TODO consider parallelizing later, ref https://github.com/cosmos/cosmos-sdk/pull/3099#discussion_r246276376
@@ -93,6 +94,11 @@ func (k Keeper) AllocateTokens(
 		k.AllocateTokensToValidator(ctx, validator, reward)
 		remaining = remaining.Sub(reward)
 	}
+
+	// allocate lp rewards
+	reward := feesCollected.MulDec(liquidityProviderReward)
+	feePool.LiquidityProviderPool = feePool.LiquidityProviderPool.Add(reward...)
+	remaining = remaining.Sub(reward)
 
 	// allocate community funding
 	feePool.CommunityPool = feePool.CommunityPool.Add(remaining...)

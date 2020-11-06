@@ -35,6 +35,17 @@ func (k Keeper) GetBonusProposerReward(ctx sdk.Context) (percent sdk.Dec) {
 	return percent
 }
 
+// GetLiquidityProviderReward returns the current distribution liquidity provider reward rate.
+func (k Keeper) GetLiquidityProviderReward(ctx sdk.Context) (percent sdk.Dec) {
+	k.paramSpace.Get(ctx, types.ParamStoreKeyLiquidityProviderReward, &percent)
+	return percent
+}
+
+// SetLiquidityProviderReward returns the current distribution liquidity provider reward rate.
+func (k Keeper) SetLiquidityProviderReward(ctx sdk.Context, percent sdk.Dec) {
+	k.paramSpace.Set(ctx, types.ParamStoreKeyLiquidityProviderReward, percent)
+}
+
 // GetWithdrawAddrEnabled returns the current distribution withdraw address
 // enabled parameter.
 func (k Keeper) GetWithdrawAddrEnabled(ctx sdk.Context) (enabled bool) {

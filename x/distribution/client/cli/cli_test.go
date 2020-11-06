@@ -79,7 +79,7 @@ func (s *IntegrationTestSuite) TestGetCmdQueryParams() {
 		{
 			"json output",
 			[]string{fmt.Sprintf("--%s=json", tmcli.OutputFlag)},
-			`{"community_tax":"0.020000000000000000","base_proposer_reward":"0.010000000000000000","bonus_proposer_reward":"0.040000000000000000","withdraw_addr_enabled":true}`,
+			`{"community_tax":"0.020000000000000000","base_proposer_reward":"0.010000000000000000","bonus_proposer_reward":"0.040000000000000000","liquidity_provider_reward":"0.000000000000000000","withdraw_addr_enabled":true}`,
 		},
 		{
 			"text output",
@@ -87,6 +87,7 @@ func (s *IntegrationTestSuite) TestGetCmdQueryParams() {
 			`base_proposer_reward: "0.010000000000000000"
 bonus_proposer_reward: "0.040000000000000000"
 community_tax: "0.020000000000000000"
+liquidity_provider_reward: "0.000000000000000000"
 withdraw_addr_enabled: true`,
 		},
 	}

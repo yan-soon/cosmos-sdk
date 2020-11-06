@@ -248,3 +248,11 @@ func (k Keeper) CommunityPool(c context.Context, req *types.QueryCommunityPoolRe
 
 	return &types.QueryCommunityPoolResponse{Pool: pool}, nil
 }
+
+// LiquidityProviderRewards queries the outstanding liquidity provider rewards coins
+func (k Keeper) LiquidityProviderRewards(c context.Context, req *types.QueryLiquidityProviderRewardsRequest) (*types.QueryLiquidityProviderRewardsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	pool := k.GetFeePoolLiquidityProviderCoins(ctx)
+
+	return &types.QueryLiquidityProviderRewardsResponse{Pool: pool}, nil
+}
