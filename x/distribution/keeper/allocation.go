@@ -98,6 +98,7 @@ func (k Keeper) AllocateTokens(
 	// allocate lp rewards
 	reward := feesCollected.MulDec(liquidityProviderReward)
 	feePool.LiquidityProviderPool = feePool.LiquidityProviderPool.Add(reward...)
+	remaining = remaining.Sub(reward)
 
 	// allocate community funding
 	feePool.CommunityPool = feePool.CommunityPool.Add(remaining...)
