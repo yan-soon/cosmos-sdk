@@ -89,6 +89,6 @@ func TestSlashingMsgs(t *testing.T) {
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
 	_, res, err := simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{unjailMsg}, "", []uint64{0}, []uint64{1}, false, false, priv1)
 	require.Error(t, err)
-	require.Nil(t, res)
+	require.Nil(t, res.Data) // ante handler has committed, so a result is present, but without data
 	require.True(t, errors.Is(types.ErrValidatorNotJailed, err))
 }
