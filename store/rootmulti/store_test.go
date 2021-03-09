@@ -261,7 +261,7 @@ func TestMultistoreLoadWithUpgrade(t *testing.T) {
 	require.NotNil(t, rl2)
 	require.Equal(t, v2, rl2.Get(k2))
 
-	// check commitInfo in storage
+	// check CommitInfo in storage
 	ci, err = getCommitInfo(db, 2)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), ci.Version)

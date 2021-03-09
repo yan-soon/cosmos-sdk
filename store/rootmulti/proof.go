@@ -20,7 +20,7 @@ func NewMultiStoreProof(storeInfos []storeInfo) *MultiStoreProof {
 
 // ComputeRootHash returns the root hash for a given multi-store proof.
 func (proof *MultiStoreProof) ComputeRootHash() []byte {
-	ci := commitInfo{
+	ci := CommitInfo{
 		Version:    -1, // TODO: Not needed; improve code.
 		StoreInfos: proof.StoreInfos,
 	}

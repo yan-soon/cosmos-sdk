@@ -20,6 +20,7 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 )
 
 const (
@@ -301,6 +302,11 @@ func (app *BaseApp) LoadVersion(version int64, baseKey *sdk.KVStoreKey) error {
 // LastCommitID returns the last CommitID of the multistore.
 func (app *BaseApp) LastCommitID() sdk.CommitID {
 	return app.cms.LastCommitID()
+}
+
+// commitInfo returns the last commitInfo of the multistore.
+func (app *BaseApp) CommitInfo() rootmulti.CommitInfo {
+	return app.cms.(*rootmulti.Store).GetLastCommitInfo()
 }
 
 // LastBlockHeight returns the last committed block height.
