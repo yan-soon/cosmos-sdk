@@ -1230,7 +1230,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 		unknownRouteTx := txTest{[]sdk.Msg{msgNoRoute{}}, 0, false}
 		_, result, err := app.Deliver(aminoTxEncoder(), unknownRouteTx)
 		require.Error(t, err)
-		require.Nil(t, result)
+		require.Nil(t, result.Data) // ante handler has committed, so a result is present, but without data
 
 		space, code, _ := sdkerrors.ABCIInfo(err, false)
 		require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), space, err)
@@ -1239,7 +1239,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 		unknownRouteTx = txTest{[]sdk.Msg{msgCounter{}, msgNoRoute{}}, 0, false}
 		_, result, err = app.Deliver(aminoTxEncoder(), unknownRouteTx)
 		require.Error(t, err)
-		require.Nil(t, result)
+		require.Nil(t, result.Data) // ante handler has committed, so a result is present, but without data
 
 		space, code, _ = sdkerrors.ABCIInfo(err, false)
 		require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), space, err)
@@ -1543,7 +1543,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	res = app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
-	require.Empty(t, res.Events)
+	require.NotEmpty(t, res.Events) // ante handler events are preserved
 	require.False(t, res.IsOK(), fmt.Sprintf("%v", res))
 
 	ctx = app.getState(runTxModeDeliver).ctx

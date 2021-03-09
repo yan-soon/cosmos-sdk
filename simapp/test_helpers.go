@@ -360,7 +360,7 @@ func SignCheckDeliver(
 		require.NotNil(t, res)
 	} else {
 		require.Error(t, err)
-		require.Nil(t, res)
+		// require.Nil(t, res) // result may be present if ante handler committed
 	}
 
 	app.EndBlock(abci.RequestEndBlock{})
