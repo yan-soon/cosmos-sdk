@@ -148,6 +148,22 @@ func (app *BaseApp) SetEndBlocker(endBlocker sdk.EndBlocker) {
 	app.endBlocker = endBlocker
 }
 
+func (app *BaseApp) SetDeliverTxer(deliverTxer sdk.DeliverTxer) {
+	if app.sealed {
+		panic("SetDeliverTxer() on sealed BaseApp")
+	}
+
+	app.deliverTxer = deliverTxer
+}
+
+func (app *BaseApp) SetBeforeCommitter(beforeCommitter sdk.BeforeCommitter) {
+	if app.sealed {
+		panic("SetBeforeCommitter() on sealed BaseApp")
+	}
+
+	app.beforeCommitter = beforeCommitter
+}
+
 func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	if app.sealed {
 		panic("SetAnteHandler() on sealed BaseApp")
