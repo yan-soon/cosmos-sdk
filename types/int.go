@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql/driver"
 	"encoding"
 	"encoding/json"
 	"fmt"
@@ -428,4 +429,30 @@ func IntEq(t *testing.T, exp, got Int) (*testing.T, bool, string, string, string
 
 func (ip IntProto) String() string {
 	return ip.Int.String()
+}
+
+// Scan implements the sql.Scanner interface
+func (i *Int) Scan(v interface{}) error {
+	if v == nil { // handle null values in columns
+		return nil
+	}
+
+	bz, ok := v.([]byte)
+	if !ok {
+		return fmt.Errorf("could not scan type %T into Int ", v)
+	}
+	si, ok := NewIntFromString(string(bz))
+	if !ok {
+		panic("couldn't convert string '" + string(bz) + "' into Int")
+	}
+	*i = si
+	return nil
+}
+
+// Value implements the driver.Valuer interface
+func (i Int) Value() (driver.Value, error) {
+	if i == (Int{}) {
+		return nil, fmt.Errorf("nil value Int")
+	}
+	return i.String(), nil
 }
