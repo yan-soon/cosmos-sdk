@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -763,6 +764,28 @@ func (d *Dec) UnmarshalAmino(bz []byte) error { return d.Unmarshal(bz) }
 
 func (dp DecProto) String() string {
 	return dp.Dec.String()
+}
+
+// Scan implements the sql.Scanner interface
+func (d *Dec) Scan(v interface{}) error {
+	if v == nil { // handle null values in columns
+		return nil
+	}
+
+	bz, ok := v.([]byte)
+	if !ok {
+		return fmt.Errorf("could not scan type %T into Dec ", v)
+	}
+	*d = MustNewDecFromStr(string(bz))
+	return nil
+}
+
+// Value implements the driver.Valuer interface
+func (d Dec) Value() (driver.Value, error) {
+	if d == (Dec{}) {
+		return nil, fmt.Errorf("nil value Dec")
+	}
+	return d.String(), nil
 }
 
 // helpers
