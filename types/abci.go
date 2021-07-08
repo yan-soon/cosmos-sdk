@@ -21,5 +21,7 @@ type DeliverTxer func(ctx Context, req abci.RequestDeliverTx, tx abci.ResponseDe
 
 type BeforeCommitter func(ctx Context)
 
+type AfterCommitter func(ctx Context)
+
 // PeerFilter responds to p2p filtering queries from Tendermint
 type PeerFilter func(info string) abci.ResponseQuery
