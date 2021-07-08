@@ -313,6 +313,10 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	// Commit. Use the header from this latest block.
 	app.setCheckState(header)
 
+	if app.afterCommitter != nil {
+		app.afterCommitter(app.deliverState.ctx)
+	}
+
 	// empty/reset the deliver state
 	app.deliverState = nil
 

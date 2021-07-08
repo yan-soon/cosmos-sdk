@@ -64,6 +64,7 @@ type BaseApp struct { // nolint: maligned
 	endBlocker      sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
 	deliverTxer     sdk.DeliverTxer
 	beforeCommitter sdk.BeforeCommitter
+	afterCommitter  sdk.AfterCommitter
 	addrPeerFilter  sdk.PeerFilter   // filter peers by address and port
 	idPeerFilter    sdk.PeerFilter   // filter peers by node ID
 	fauxMerkleMode  bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.

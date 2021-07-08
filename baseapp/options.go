@@ -160,6 +160,14 @@ func (app *BaseApp) SetBeforeCommitter(beforeCommitter sdk.BeforeCommitter) {
 	app.beforeCommitter = beforeCommitter
 }
 
+func (app *BaseApp) SetAfterCommitter(afterCommitter sdk.AfterCommitter) {
+	if app.sealed {
+		panic("SetBeforeCommitter() on sealed BaseApp")
+	}
+
+	app.afterCommitter = afterCommitter
+}
+
 func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	if app.sealed {
 		panic("SetAnteHandler() on sealed BaseApp")
