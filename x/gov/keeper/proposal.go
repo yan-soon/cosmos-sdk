@@ -86,7 +86,10 @@ func (keeper Keeper) IterateProposals(ctx sdk.Context, cb func(proposal types.Pr
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var proposal types.Proposal
-		keeper.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &proposal)
+		err := keeper.cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &proposal)
+		if err != nil {
+			continue
+		}
 
 		if cb(proposal) {
 			break
