@@ -1,4 +1,4 @@
-module github.com/Switcheo/cosmos-sdk/cosmovisor
+module github.com/cosmos/cosmos-sdk/cosmovisor
 
 go 1.14
 
