@@ -27,7 +27,6 @@ artifacts
 # Data - ideally these don't exist
 baseapp/data/*
 client/lcd/keys/*
-client/keys/home/
 mytestnet
 
 # Testing
