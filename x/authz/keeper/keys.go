@@ -13,7 +13,7 @@ var (
 )
 
 // StoreKey is the store key string for authz
-const StoreKey = authz.ModuleName
+var StoreKey = authz.ModuleName
 
 // grantStoreKey - return authorization store key
 // Items are stored with the following key: values
