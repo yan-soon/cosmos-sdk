@@ -26,6 +26,15 @@ var (
 	GlobalAccountNumberKey = []byte("globalAccountNumber")
 )
 
+const (
+	EthAddressToCosmosAddressKey = "EthAddressToCosmosAddressKey-value-"
+	CosmosAddressToEthAddressKey = "CosmosAddressToEthAddressKey-value-"
+)
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}
+
 // AddressStoreKey turn an address to key used to get it from the account store
 func AddressStoreKey(addr sdk.AccAddress) []byte {
 	return append(AddressStoreKeyPrefix, addr.Bytes()...)
