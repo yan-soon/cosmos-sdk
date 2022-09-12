@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -236,3 +237,9 @@ func (ak AccountKeeper) UnmarshalAccount(bz []byte) (types.AccountI, error) {
 
 // GetCodec return codec.Codec object used by the keeper
 func (ak AccountKeeper) GetCodec() codec.BinaryCodec { return ak.cdc }
+
+// Store fetches the permanent store
+func (ak AccountKeeper) Store(ctx sdk.Context, key string) prefix.Store {
+	mainStore := ctx.KVStore(ak.key)
+	return prefix.NewStore(mainStore, types.KeyPrefix(key))
+}

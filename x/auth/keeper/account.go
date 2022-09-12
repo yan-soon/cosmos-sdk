@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
@@ -33,6 +35,10 @@ func (ak AccountKeeper) HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 
 // GetAccount implements AccountKeeperI.
 func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.AccountI {
+	correspondingAddr := ak.GetCorrespondingAddressIfExists(ctx, addr, true)
+	if correspondingAddr != nil {
+		addr = correspondingAddr
+	}
 	store := ctx.KVStore(ak.key)
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
@@ -87,4 +93,29 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 			break
 		}
 	}
+}
+
+// GetCorrespondingAddressIfExists gets cosmos address if getCorrespondingCosmosAddr is true, else it gets the corresponding eth address
+func (ak AccountKeeper) GetCorrespondingAddressIfExists(ctx sdk.Context, addr sdk.AccAddress, getCorrespondingCosmosAddr bool) (correspondingAddr sdk.AccAddress) {
+	var mapping prefix.Store
+	if getCorrespondingCosmosAddr {
+		mapping = ak.Store(ctx, types.EthAddressToCosmosAddressKey)
+	} else {
+		mapping = ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+	}
+	bz := mapping.Get(address.MustLengthPrefix(addr.Bytes()))
+	if bz == nil {
+		return nil
+	}
+	return bz
+}
+
+// SetCorrespondingAddresses sets both cosmos to eth and eth to cosmos mapping (2 way)
+func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
+	ethAddrToCosmosAddrMapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
+	ethAddrToCosmosAddrMapping.Set(address.MustLengthPrefix(ethAddr.Bytes()), address.MustLengthPrefix(cosmosAddr.Bytes()))
+
+	cosmosAddrToEthAddrMapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+	cosmosAddrToEthAddrMapping.Set(address.MustLengthPrefix(cosmosAddr.Bytes()), address.MustLengthPrefix(ethAddr.Bytes()))
+
 }
