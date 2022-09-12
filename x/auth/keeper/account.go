@@ -28,6 +28,21 @@ func (ak AccountKeeper) NewAccount(ctx sdk.Context, acc types.AccountI) types.Ac
 // HasAccount implements AccountKeeperI.
 func (ak AccountKeeper) HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := ctx.KVStore(ak.key)
+	if !store.Has(types.AddressStoreKey(addr)) {
+		cosmosAddr := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr)
+		if cosmosAddr == nil {
+			return false
+		}
+		return store.Has(types.AddressStoreKey(cosmosAddr))
+	}
+	return true
+}
+
+// HasExactAccount implements AccountKeeperI.
+// Checks if account exists based on address directly, doesn't check for mapping.
+// Original cosmos implementation of HasAccount
+func (ak AccountKeeper) HasExactAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
+	store := ctx.KVStore(ak.key)
 	return store.Has(types.AddressStoreKey(addr))
 }
 
@@ -36,10 +51,15 @@ func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.A
 	store := ctx.KVStore(ak.key)
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
-		return nil
+		cosmosAddr := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr)
+		if cosmosAddr == nil {
+			return nil
+		}
+		accBz := store.Get(types.AddressStoreKey(cosmosAddr))
+		return ak.decodeAccount(accBz)
 	}
-
 	return ak.decodeAccount(bz)
+
 }
 
 // GetAllAccounts returns all accounts in the accountKeeper.
@@ -84,6 +104,70 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 		account := ak.decodeAccount(iterator.Value())
 
 		if cb(account) {
+			break
+		}
+	}
+}
+
+func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, cosmosAddr sdk.AccAddress) (correspondingEthAddr sdk.AccAddress) {
+	mapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+	bz := mapping.Get(cosmosAddr)
+	if bz == nil {
+		return nil
+	}
+	return bz
+}
+
+func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress) {
+	mapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
+	bz := mapping.Get(ethAddr)
+	if bz == nil {
+		return nil
+	}
+	return bz
+}
+
+func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
+	ak.AddToEthToCosmosAddressMap(ctx, ethAddr, cosmosAddr)
+	ak.AddToCosmosToEthAddressMap(ctx, cosmosAddr, ethAddr)
+
+}
+
+func (ak AccountKeeper) AddToCosmosToEthAddressMap(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
+	cosmosAddrToEthAddrMapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+	cosmosAddrToEthAddrMapping.Set(cosmosAddr, ethAddr)
+
+}
+
+func (ak AccountKeeper) AddToEthToCosmosAddressMap(ctx sdk.Context, ethAddr sdk.AccAddress, cosmosAddr sdk.AccAddress) {
+	ethAddrToCosmosAddrMapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
+	ethAddrToCosmosAddrMapping.Set(ethAddr, cosmosAddr)
+
+}
+
+func (ak AccountKeeper) IterateEthToCosmosAddressMapping(ctx sdk.Context, cb func(ethAddress, cosmosAddress sdk.AccAddress) bool) {
+	store := ctx.KVStore(ak.key)
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.EthAddressToCosmosAddressKey))
+
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)))
+		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)):])
+		if cb(addressKey, iterator.Value()) {
+			break
+		}
+	}
+
+}
+func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb func(cosmosAddress, ethAddress sdk.AccAddress) bool) {
+	store := ctx.KVStore(ak.key)
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.CosmosAddressToEthAddressKey))
+
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)))
+		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)):])
+		if cb(addressKey, iterator.Value()) {
 			break
 		}
 	}
