@@ -35,10 +35,6 @@ func (ak AccountKeeper) HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 
 // GetAccount implements AccountKeeperI.
 func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.AccountI {
-	correspondingAddr := ak.GetCorrespondingAddressIfExists(ctx, addr, true)
-	if correspondingAddr != nil {
-		addr = correspondingAddr
-	}
 	store := ctx.KVStore(ak.key)
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
