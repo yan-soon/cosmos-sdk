@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -91,14 +90,17 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 	}
 }
 
-// GetCorrespondingAddressIfExists gets cosmos address if getCorrespondingCosmosAddr is true, else it gets the corresponding eth address
-func (ak AccountKeeper) GetCorrespondingAddressIfExists(ctx sdk.Context, addr sdk.AccAddress, getCorrespondingCosmosAddr bool) (correspondingAddr sdk.AccAddress) {
-	var mapping prefix.Store
-	if getCorrespondingCosmosAddr {
-		mapping = ak.Store(ctx, types.EthAddressToCosmosAddressKey)
-	} else {
-		mapping = ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
+	mapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
+	bz := mapping.Get(address.MustLengthPrefix(addr.Bytes()))
+	if bz == nil {
+		return nil
 	}
+	return bz
+}
+
+func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
+	mapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
 	bz := mapping.Get(address.MustLengthPrefix(addr.Bytes()))
 	if bz == nil {
 		return nil
