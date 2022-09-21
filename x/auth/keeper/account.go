@@ -92,7 +92,7 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 
 func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
 	mapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
-	bz := mapping.Get(address.MustLengthPrefix(addr.Bytes()))
+	bz := mapping.Get(address.MustLengthPrefix(addr))
 	if bz == nil {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, addr
 
 func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
 	mapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
-	bz := mapping.Get(address.MustLengthPrefix(addr.Bytes()))
+	bz := mapping.Get(address.MustLengthPrefix(addr))
 	if bz == nil {
 		return nil
 	}
@@ -111,9 +111,9 @@ func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, a
 // SetCorrespondingAddresses sets both cosmos to eth and eth to cosmos mapping (2 way)
 func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
 	ethAddrToCosmosAddrMapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
-	ethAddrToCosmosAddrMapping.Set(address.MustLengthPrefix(ethAddr.Bytes()), address.MustLengthPrefix(cosmosAddr.Bytes()))
+	ethAddrToCosmosAddrMapping.Set(address.MustLengthPrefix(ethAddr), address.MustLengthPrefix(cosmosAddr))
 
 	cosmosAddrToEthAddrMapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
-	cosmosAddrToEthAddrMapping.Set(address.MustLengthPrefix(cosmosAddr.Bytes()), address.MustLengthPrefix(ethAddr.Bytes()))
+	cosmosAddrToEthAddrMapping.Set(address.MustLengthPrefix(cosmosAddr), address.MustLengthPrefix(ethAddr))
 
 }
