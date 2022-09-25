@@ -36,10 +36,15 @@ func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.A
 	store := ctx.KVStore(ak.key)
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
-		return nil
+		cosmosAddr := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr)
+		if cosmosAddr == nil {
+			return nil
+		}
+		accBz := store.Get(types.AddressStoreKey(cosmosAddr))
+		return ak.decodeAccount(accBz)
 	}
-
 	return ak.decodeAccount(bz)
+
 }
 
 // GetAllAccounts returns all accounts in the accountKeeper.
