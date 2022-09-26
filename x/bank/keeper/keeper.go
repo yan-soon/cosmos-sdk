@@ -318,11 +318,18 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 
 	acct := k.ak.GetAccount(ctx, recipientAddr)
 
-	if k.BlockedAddr(acct.GetAddress()) {
+	var address sdk.AccAddress
+	if acct == nil {
+		address = recipientAddr
+	} else {
+		address = acct.GetAddress()
+	}
+
+	if k.BlockedAddr(address) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
 	}
 
-	return k.SendCoins(ctx, senderAddr, acct.GetAddress(), amt)
+	return k.SendCoins(ctx, senderAddr, address, amt)
 }
 
 // SendCoinsFromModuleToModule transfers coins from a ModuleAccount to another.
@@ -351,12 +358,19 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins,
 ) error {
 	acct := k.ak.GetAccount(ctx, senderAddr)
+
+	var address sdk.AccAddress
+	if acct == nil {
+		address = senderAddr
+	} else {
+		address = acct.GetAddress()
+	}
 	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
 	if recipientAcc == nil {
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
 	}
 
-	return k.SendCoins(ctx, acct.GetAddress(), recipientAcc.GetAddress(), amt)
+	return k.SendCoins(ctx, address, recipientAcc.GetAddress(), amt)
 }
 
 // DelegateCoinsFromAccountToModule delegates coins and transfers them from a

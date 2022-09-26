@@ -58,12 +58,17 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 }
 
 // GetAllBalances returns all the account balances for the given account address.
+// Gets all balances from the mapped cosmos account if there is.
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
 	acct := k.ak.GetAccount(ctx, addr)
-	fmt.Printf("\naccounttt:%v", acct)
-	fmt.Printf("\naddr:%v", addr)
-	k.IterateAccountBalances(ctx, acct.GetAddress(), func(balance sdk.Coin) bool {
+	var address sdk.AccAddress
+	if acct == nil {
+		address = addr
+	} else {
+		address = acct.GetAddress()
+	}
+	k.IterateAccountBalances(ctx, address, func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
 	})
@@ -102,7 +107,15 @@ func (k BaseViewKeeper) GetAccountsBalances(ctx sdk.Context) []types.Balance {
 // Returns balance of mapped cosmos account if present for eth address
 func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 	acct := k.ak.GetAccount(ctx, addr)
-	accountStore := k.getAccountStore(ctx, acct.GetAddress())
+
+	var address sdk.AccAddress
+	if acct == nil {
+		address = addr
+	} else {
+		address = acct.GetAddress()
+	}
+
+	accountStore := k.getAccountStore(ctx, address)
 
 	bz := accountStore.Get([]byte(denom))
 	if bz == nil {

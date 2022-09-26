@@ -134,22 +134,30 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 // Creates new account only if there is no mapping available for the recipient address AND recipient address account absent
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	fromAcct := k.ak.GetAccount(ctx, fromAddr)
-	err := k.subUnlockedCoins(ctx, fromAcct.GetAddress(), amt)
+
+	var fromAddress sdk.AccAddress
+	if fromAcct == nil {
+		fromAddress = fromAddr
+	} else {
+		fromAddress = fromAcct.GetAddress()
+	}
+
+	err := k.subUnlockedCoins(ctx, fromAddress, amt)
 	if err != nil {
 		return err
 	}
 
 	toAcct := k.ak.GetAccount(ctx, toAddr)
+
+	var toAddress sdk.AccAddress
+	if toAcct == nil {
+		toAddress = toAddr
+	} else {
+		toAddress = toAcct.GetAddress()
+	}
 	accExists := toAcct != nil
 
-	var toAddress string
-	if accExists {
-		err = k.addCoins(ctx, toAcct.GetAddress(), amt)
-		toAddress = toAcct.GetAddress().String()
-	} else {
-		err = k.addCoins(ctx, toAddr, amt)
-		toAddress = toAddr.String()
-	}
+	err = k.addCoins(ctx, toAddress, amt)
 
 	if err != nil {
 		return err
@@ -167,8 +175,8 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeTransfer,
-			sdk.NewAttribute(types.AttributeKeyRecipient, toAddress),
-			sdk.NewAttribute(types.AttributeKeySender, fromAcct.GetAddress().String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, toAddress.String()),
+			sdk.NewAttribute(types.AttributeKeySender, fromAddress.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
 		),
 		sdk.NewEvent(
