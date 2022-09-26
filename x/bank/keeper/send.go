@@ -130,13 +130,27 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
+// Sender and recipient address will be mapped to their corresponding cosmos addresses should they already be mapped
+// Creates new account only if there is no mapping available for the recipient address AND recipient address account absent
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	err := k.subUnlockedCoins(ctx, fromAddr, amt)
+	fromAcct := k.ak.GetAccount(ctx, fromAddr)
+	err := k.subUnlockedCoins(ctx, fromAcct.GetAddress(), amt)
 	if err != nil {
 		return err
 	}
 
-	err = k.addCoins(ctx, toAddr, amt)
+	toAcct := k.ak.GetAccount(ctx, toAddr)
+	accExists := toAcct != nil
+
+	var toAddress string
+	if accExists {
+		err = k.addCoins(ctx, toAcct.GetAddress(), amt)
+		toAddress = toAcct.GetAddress().String()
+	} else {
+		err = k.addCoins(ctx, toAddr, amt)
+		toAddress = toAddr.String()
+	}
+
 	if err != nil {
 		return err
 	}
@@ -145,7 +159,6 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 	//
 	// NOTE: This should ultimately be removed in favor a more flexible approach
 	// such as delegated fee messages.
-	accExists := k.ak.HasAccount(ctx, toAddr)
 	if !accExists {
 		defer telemetry.IncrCounter(1, "new", "account")
 		k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
@@ -154,8 +167,8 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeTransfer,
-			sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
-			sdk.NewAttribute(types.AttributeKeySender, fromAddr.String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, toAddress),
+			sdk.NewAttribute(types.AttributeKeySender, fromAcct.GetAddress().String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
 		),
 		sdk.NewEvent(

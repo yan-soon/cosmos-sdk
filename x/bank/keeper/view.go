@@ -60,7 +60,8 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 // GetAllBalances returns all the account balances for the given account address.
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
-	k.IterateAccountBalances(ctx, addr, func(balance sdk.Coin) bool {
+	acct := k.ak.GetAccount(ctx, addr)
+	k.IterateAccountBalances(ctx, acct.GetAddress(), func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
 	})
@@ -96,8 +97,10 @@ func (k BaseViewKeeper) GetAccountsBalances(ctx sdk.Context) []types.Balance {
 
 // GetBalance returns the balance of a specific denomination for a given account
 // by address.
+// Returns balance of mapped cosmos account if present for eth address
 func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
-	accountStore := k.getAccountStore(ctx, addr)
+	acct := k.ak.GetAccount(ctx, addr)
+	accountStore := k.getAccountStore(ctx, acct.GetAddress())
 
 	bz := accountStore.Get([]byte(denom))
 	if bz == nil {
