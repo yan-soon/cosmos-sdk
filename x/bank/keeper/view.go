@@ -61,6 +61,8 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
 	acct := k.ak.GetAccount(ctx, addr)
+	fmt.Printf("\naccounttt:%v", acct)
+	fmt.Printf("\naddr:%v", addr)
 	k.IterateAccountBalances(ctx, acct.GetAddress(), func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
