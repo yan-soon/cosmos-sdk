@@ -316,14 +316,7 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
 	}
 
-	acct := k.ak.GetAccount(ctx, recipientAddr)
-
-	var address sdk.AccAddress
-	if acct == nil {
-		address = recipientAddr
-	} else {
-		address = acct.GetAddress()
-	}
+	address := k.getMappedAccountAddressIfExists(ctx, recipientAddr)
 
 	if k.BlockedAddr(address) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
@@ -357,20 +350,13 @@ func (k BaseKeeper) SendCoinsFromModuleToModule(
 func (k BaseKeeper) SendCoinsFromAccountToModule(
 	ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins,
 ) error {
-	acct := k.ak.GetAccount(ctx, senderAddr)
 
-	var address sdk.AccAddress
-	if acct == nil {
-		address = senderAddr
-	} else {
-		address = acct.GetAddress()
-	}
 	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
 	if recipientAcc == nil {
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
 	}
 
-	return k.SendCoins(ctx, address, recipientAcc.GetAddress(), amt)
+	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
 
 // DelegateCoinsFromAccountToModule delegates coins and transfers them from a
@@ -562,4 +548,13 @@ func (k BaseViewKeeper) IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bo
 			break
 		}
 	}
+}
+
+// Get mapped cosmos account address if exists
+func (k BaseViewKeeper) getMappedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
+	acct := k.ak.GetAccount(ctx, addr)
+	if acct == nil {
+		return addr
+	}
+	return acct.GetAddress()
 }

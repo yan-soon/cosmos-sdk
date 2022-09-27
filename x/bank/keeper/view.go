@@ -61,13 +61,7 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 // Gets all balances from the mapped cosmos account if there is.
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
-	acct := k.ak.GetAccount(ctx, addr)
-	var address sdk.AccAddress
-	if acct == nil {
-		address = addr
-	} else {
-		address = acct.GetAddress()
-	}
+	address := k.getMappedAccountAddressIfExists(ctx, addr)
 	k.IterateAccountBalances(ctx, address, func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
@@ -106,14 +100,8 @@ func (k BaseViewKeeper) GetAccountsBalances(ctx sdk.Context) []types.Balance {
 // by address.
 // Returns balance of mapped cosmos account if present for eth address
 func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
-	acct := k.ak.GetAccount(ctx, addr)
 
-	var address sdk.AccAddress
-	if acct == nil {
-		address = addr
-	} else {
-		address = acct.GetAddress()
-	}
+	address := k.getMappedAccountAddressIfExists(ctx, addr)
 
 	accountStore := k.getAccountStore(ctx, address)
 
@@ -132,7 +120,9 @@ func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom s
 // provides the token balance to a callback. If true is returned from the
 // callback, iteration is halted.
 func (k BaseViewKeeper) IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(sdk.Coin) bool) {
-	accountStore := k.getAccountStore(ctx, addr)
+
+	address := k.getMappedAccountAddressIfExists(ctx, addr)
+	accountStore := k.getAccountStore(ctx, address)
 
 	iterator := accountStore.Iterator(nil, nil)
 	defer iterator.Close()

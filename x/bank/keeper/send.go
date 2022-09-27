@@ -133,31 +133,13 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 // Sender and recipient address will be mapped to their corresponding cosmos addresses should they already be mapped
 // Creates new account only if there is no mapping available for the recipient address AND recipient address account absent
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	fromAcct := k.ak.GetAccount(ctx, fromAddr)
 
-	var fromAddress sdk.AccAddress
-	if fromAcct == nil {
-		fromAddress = fromAddr
-	} else {
-		fromAddress = fromAcct.GetAddress()
-	}
-
-	err := k.subUnlockedCoins(ctx, fromAddress, amt)
+	err := k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
 		return err
 	}
 
-	toAcct := k.ak.GetAccount(ctx, toAddr)
-
-	var toAddress sdk.AccAddress
-	if toAcct == nil {
-		toAddress = toAddr
-	} else {
-		toAddress = toAcct.GetAddress()
-	}
-	accExists := toAcct != nil
-
-	err = k.addCoins(ctx, toAddress, amt)
+	err = k.addCoins(ctx, toAddr, amt)
 
 	if err != nil {
 		return err
@@ -167,6 +149,7 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 	//
 	// NOTE: This should ultimately be removed in favor a more flexible approach
 	// such as delegated fee messages.
+	accExists := k.ak.HasAccount(ctx, toAddr)
 	if !accExists {
 		defer telemetry.IncrCounter(1, "new", "account")
 		k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
@@ -175,8 +158,8 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeTransfer,
-			sdk.NewAttribute(types.AttributeKeyRecipient, toAddress.String()),
-			sdk.NewAttribute(types.AttributeKeySender, fromAddress.String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
+			sdk.NewAttribute(types.AttributeKeySender, fromAddr.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
 		),
 		sdk.NewEvent(
@@ -273,8 +256,9 @@ func (k BaseSendKeeper) setBalance(ctx sdk.Context, addr sdk.AccAddress, balance
 	if !balance.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, balance.String())
 	}
+	address := k.getMappedAccountAddressIfExists(ctx, addr)
 
-	accountStore := k.getAccountStore(ctx, addr)
+	accountStore := k.getAccountStore(ctx, address)
 
 	// Bank invariants require to not store zero balances.
 	if balance.IsZero() {

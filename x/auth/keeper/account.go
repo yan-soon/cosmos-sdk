@@ -28,6 +28,21 @@ func (ak AccountKeeper) NewAccount(ctx sdk.Context, acc types.AccountI) types.Ac
 // HasAccount implements AccountKeeperI.
 func (ak AccountKeeper) HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := ctx.KVStore(ak.key)
+	if !store.Has(types.AddressStoreKey(addr)) {
+		cosmosAddr := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr)
+		if cosmosAddr == nil {
+			return false
+		}
+		return store.Has(types.AddressStoreKey(cosmosAddr))
+	}
+	return true
+}
+
+// HasExactAccount implements AccountKeeperI.
+// Checks if account exists based on address directly, doesn't check for mapping.
+// Original cosmos implementation of HasAccount
+func (ak AccountKeeper) HasExactAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
+	store := ctx.KVStore(ak.key)
 	return store.Has(types.AddressStoreKey(addr))
 }
 
