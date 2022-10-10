@@ -109,18 +109,18 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 	}
 }
 
-func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
+func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, cosmosAddr sdk.AccAddress) (correspondingEthAddr sdk.AccAddress) {
 	mapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
-	bz := mapping.Get(addr)
+	bz := mapping.Get(cosmosAddr)
 	if bz == nil {
 		return nil
 	}
 	return bz
 }
 
-func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) (correspondingAddr sdk.AccAddress) {
+func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress) {
 	mapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
-	bz := mapping.Get(addr)
+	bz := mapping.Get(ethAddr)
 	if bz == nil {
 		return nil
 	}
@@ -135,4 +135,28 @@ func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sd
 	cosmosAddrToEthAddrMapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
 	cosmosAddrToEthAddrMapping.Set(cosmosAddr, ethAddr)
 
+}
+
+func (ak AccountKeeper) IterateEthToCosmosMapping(ctx sdk.Context, cb func(ethAddress, cosmosAddress sdk.AccAddress) bool) {
+	store := ctx.KVStore(ak.key)
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.EthAddressToCosmosAddressKey))
+
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		if cb(iterator.Key(), iterator.Value()) {
+			break
+		}
+	}
+
+}
+func (ak AccountKeeper) IterateCosmosToEthMapping(ctx sdk.Context, cb func(cosmosAddress, ethAddress sdk.AccAddress) bool) {
+	store := ctx.KVStore(ak.key)
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.CosmosAddressToEthAddressKey))
+
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		if cb(iterator.Key(), iterator.Value()) {
+			break
+		}
+	}
 }

@@ -49,6 +49,18 @@ type AccountKeeperI interface {
 
 	// Fetch the next account number, and increment the internal counter.
 	GetNextAccountNumber(sdk.Context) uint64
+
+	// Fetch the corresponding eth address for a given cosmos addr
+	GetCorrespondingEthAddressIfExists(ctx sdk.Context, cosmosAddr sdk.AccAddress) (correspondingEthAddr sdk.AccAddress)
+
+	// Fetch the corresponding eth address for a given eth addr
+	GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress)
+
+	// Iterate over eth-cosmos address mapping, calling the provided function. Stop iteration when it returns true
+	IterateEthToCosmosMapping(sdk.Context, func(ethAddress, cosmosAddress sdk.AccAddress) bool)
+
+	// Iterate over cosmos-eth address mapping, calling the provided function. Stop iteration when it returns true
+	IterateCosmosToEthMapping(sdk.Context, func(cosmosAddress, ethAddress sdk.AccAddress) bool)
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)
