@@ -57,10 +57,10 @@ type AccountKeeperI interface {
 	GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress)
 
 	// Iterate over eth-cosmos address mapping, calling the provided function. Stop iteration when it returns true
-	IterateEthToCosmosMapping(sdk.Context, func(ethAddress, cosmosAddress sdk.AccAddress) bool)
+	IterateEthToCosmosAddressMapping(sdk.Context, func(ethAddress, cosmosAddress sdk.AccAddress) bool)
 
 	// Iterate over cosmos-eth address mapping, calling the provided function. Stop iteration when it returns true
-	IterateCosmosToEthMapping(sdk.Context, func(cosmosAddress, ethAddress sdk.AccAddress) bool)
+	IterateCosmosToEthAddressMapping(sdk.Context, func(cosmosAddress, ethAddress sdk.AccAddress) bool)
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)
