@@ -61,6 +61,15 @@ type AccountKeeperI interface {
 
 	// Iterate over cosmos-eth address mapping, calling the provided function. Stop iteration when it returns true
 	IterateCosmosToEthAddressMapping(sdk.Context, func(cosmosAddress, ethAddress sdk.AccAddress) bool)
+
+	// Sets both cosmos to eth and eth to cosmos mapping (2 way)
+	SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress)
+
+	// Adds address key value to cosmos-eth mapping
+	AddToCosmosToEthAddressMap(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress)
+
+	// Adds address key value to eth-cosmos mapping
+	AddToEthToCosmosAddressMap(ctx sdk.Context, ethAddr sdk.AccAddress, cosmosAddr sdk.AccAddress)
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)

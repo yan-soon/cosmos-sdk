@@ -127,13 +127,21 @@ func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, e
 	return bz
 }
 
-// SetCorrespondingAddresses sets both cosmos to eth and eth to cosmos mapping (2 way)
 func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
-	ethAddrToCosmosAddrMapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
-	ethAddrToCosmosAddrMapping.Set(ethAddr, cosmosAddr)
+	ak.AddToEthToCosmosAddressMap(ctx, ethAddr, cosmosAddr)
+	ak.AddToCosmosToEthAddressMap(ctx, cosmosAddr, ethAddr)
 
+}
+
+func (ak AccountKeeper) AddToCosmosToEthAddressMap(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress) {
 	cosmosAddrToEthAddrMapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
 	cosmosAddrToEthAddrMapping.Set(cosmosAddr, ethAddr)
+
+}
+
+func (ak AccountKeeper) AddToEthToCosmosAddressMap(ctx sdk.Context, ethAddr sdk.AccAddress, cosmosAddr sdk.AccAddress) {
+	ethAddrToCosmosAddrMapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
+	ethAddrToCosmosAddrMapping.Set(ethAddr, cosmosAddr)
 
 }
 
