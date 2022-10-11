@@ -137,7 +137,6 @@ func (ak AccountKeeper) SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sd
 
 }
 
-// IterateEthToCosmosAddressMapping iterates over eth-cosmos address mapping, calling the provided function. Stop iteration when it returns true
 func (ak AccountKeeper) IterateEthToCosmosAddressMapping(ctx sdk.Context, cb func(ethAddress, cosmosAddress sdk.AccAddress) bool) {
 	store := ctx.KVStore(ak.key)
 	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.EthAddressToCosmosAddressKey))
@@ -150,8 +149,6 @@ func (ak AccountKeeper) IterateEthToCosmosAddressMapping(ctx sdk.Context, cb fun
 	}
 
 }
-
-// IterateCosmosToEthAddressMapping iterates over cosmos-eth address mapping, calling the provided function. Stop iteration when it returns true
 func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb func(cosmosAddress, ethAddress sdk.AccAddress) bool) {
 	store := ctx.KVStore(ak.key)
 	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.CosmosAddressToEthAddressKey))
