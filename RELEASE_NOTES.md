@@ -1,14 +1,20 @@
-# Cosmos SDK v0.45.0 Release Notes
+# Cosmos SDK v0.45.9 Release Notes
 
-This release introduces bug fixes and improvements on the Cosmos SDK v0.45 series:
+This is a security release for the 
+[Dragonberry security advisory](https://forum.cosmos.network/t/ibc-security-advisory-dragonberry/7702). 
+Please upgrade ASAP.
 
-Highlights
-+ Added the missing `iavl-cache-size` config parameter parsing to set a desired IAVL cache size. The default value is way to small for big chains, and causes OOM failures.
-+ Added a check in `x/upgrade` module's `BeginBlock` preventing accidental binary downgrades
-+ Fix: the `/cosmos/tx/v1beta1/txs/{hash}` endpoint returns correct return code (404) for a non existing tx.
+Next to this, we have also included a few minor bugfixes.
 
-See the [Cosmos SDK v0.45.1  Changelog](https://github.com/cosmos/cosmos-sdk/blob/v0.45.1/CHANGELOG.md) for the exhaustive list of all changes and check other fixes in 0.45.x release series.
+Chains must add the following to their go.mod for the application:
 
-**Full Diff**: https://github.com/cosmos/cosmos-sdk/compare/v0.45.0...v0.45.1
+```go
+replace github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23
+```
 
+Bumping the SDK version should be smooth, however, feel free to tag core devs to review your upgrading PR:
 
+- **CET**: @tac0turtle, @okwme, @AdityaSripal, @colin-axner, @julienrbrt
+- **EST**: @ebuchman, @alexanderbez, @aaronc
+- **PST**: @jtremback, @nicolaslara, @czarcas7ic, @p0mvn
+- **CDT**: @ValarDragon, @zmanian

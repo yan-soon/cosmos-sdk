@@ -6,7 +6,6 @@ import (
 )
 
 // DONTCOVER
-// nolint
 
 const (
 	ModuleName = "distribution"
