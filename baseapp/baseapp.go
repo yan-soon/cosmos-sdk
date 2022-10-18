@@ -52,6 +52,8 @@ type BaseApp struct { //nolint: maligned
 
 	anteHandler sdk.AnteHandler // ante handler for fee and auth
 
+	msgHandlerMiddleware sdk.MsgHandlerMiddleware // middleware that wraps msg handlers
+
 	deliverTxer     sdk.DeliverTxer
 	beforeCommitter sdk.BeforeCommitter
 	afterCommitter  sdk.AfterCommitter
@@ -746,6 +748,11 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		Data: make([]*sdk.MsgData, 0, len(msgs)),
 	}
 
+	middleware := app.msgHandlerMiddleware
+	if middleware == nil {
+		middleware = noopMiddleware
+	}
+
 	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
 	for i, msg := range msgs {
 		// skip actual execution for (Re)CheckTx mode
@@ -761,7 +768,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 		if handler := app.msgServiceRouter.Handler(msg); handler != nil {
 			// ADR 031 request type routing
-			msgResult, err = handler(ctx, msg)
+			msgResult, err = middleware(ctx, msg, handler)
 			eventMsgName = sdk.MsgTypeURL(msg)
 		} else if legacyMsg, ok := msg.(legacytx.LegacyMsg); ok {
 			// legacy sdk.Msg routing
@@ -776,7 +783,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 				return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
 			}
 
-			msgResult, err = handler(ctx, msg)
+			msgResult, err = middleware(ctx, msg, handler)
 		} else {
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "can't route message %+v", msg)
 		}
@@ -810,4 +817,8 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		Log:    strings.TrimSpace(msgLogs.String()),
 		Events: events.ToABCIEvents(),
 	}, nil
+}
+
+var noopMiddleware sdk.MsgHandlerMiddleware = func(c sdk.Context, m sdk.Msg, h sdk.Handler) (*sdk.Result, error) {
+	return h(c, m)
 }

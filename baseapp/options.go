@@ -190,6 +190,14 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	app.anteHandler = ah
 }
 
+func (app *BaseApp) SetMsgHandlerMiddleware(msgHandlerMiddleware sdk.MsgHandlerMiddleware) {
+	if app.sealed {
+		panic("SetMsgHandlerMiddleware() on sealed BaseApp")
+	}
+
+	app.msgHandlerMiddleware = msgHandlerMiddleware
+}
+
 func (app *BaseApp) SetAddrPeerFilter(pf sdk.PeerFilter) {
 	if app.sealed {
 		panic("SetAddrPeerFilter() on sealed BaseApp")
