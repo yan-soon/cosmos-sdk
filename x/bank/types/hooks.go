@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// combine multiple staking hooks, all hook functions are run in array sequence
+// combine multiple send hooks, all hook functions are run in array sequence
 type MutiSendHooks []SendHooks
 
 func NewMutiSendHooks(hooks ...SendHooks) MutiSendHooks {

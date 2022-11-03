@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-// Implements BankHooks interface
+// Implements SendHooks interface
 var _ types.SendHooks = BaseSendKeeper{}
 
 func (keeper BaseSendKeeper) AfterSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) {
