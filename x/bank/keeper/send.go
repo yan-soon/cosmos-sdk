@@ -24,6 +24,10 @@ type SendKeeper interface {
 	IsSendEnabledCoins(ctx sdk.Context, coins ...sdk.Coin) error
 
 	BlockedAddr(addr sdk.AccAddress) bool
+
+	types.SendHooks
+
+	SetHooks(sh types.SendHooks) *BaseSendKeeper
 }
 
 var _ SendKeeper = (*BaseSendKeeper)(nil)
@@ -40,6 +44,7 @@ type BaseSendKeeper struct {
 
 	// list of addresses that are restricted from receiving transactions
 	blockedAddrs map[string]bool
+	hooks        types.SendHooks
 }
 
 func NewBaseSendKeeper(
@@ -53,6 +58,17 @@ func NewBaseSendKeeper(
 		paramSpace:     paramSpace,
 		blockedAddrs:   blockedAddrs,
 	}
+}
+
+// SetHooks sets the hooks for bank
+func (keeper *BaseSendKeeper) SetHooks(sh types.SendHooks) *BaseSendKeeper {
+	if keeper.hooks != nil {
+		panic("cannot set bank hooks twice")
+	}
+
+	keeper.hooks = sh
+
+	return keeper
 }
 
 // GetParams returns the total set of bank parameters.
@@ -130,6 +146,8 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
+	k.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
+
 	err := k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
 		return err
@@ -149,6 +167,8 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 		defer telemetry.IncrCounter(1, "new", "account")
 		k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
 	}
+
+	k.hooks.AfterSend(ctx, fromAddr, toAddr, amt)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
