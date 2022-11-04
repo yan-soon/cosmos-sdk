@@ -8,14 +8,23 @@ import (
 // Implements SendHooks interface
 var _ types.SendHooks = BaseSendKeeper{}
 
-func (keeper BaseSendKeeper) AfterSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) {
+func (keeper BaseSendKeeper) AfterSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	if keeper.hooks != nil {
-		keeper.hooks.AfterSend(ctx, fromAddr, toAddr, amt)
+		err := keeper.hooks.AfterSend(ctx, fromAddr, toAddr, amt)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (keeper BaseSendKeeper) BeforeSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) {
+func (keeper BaseSendKeeper) BeforeSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	if keeper.hooks != nil {
-		keeper.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
+		err := keeper.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+
 }
