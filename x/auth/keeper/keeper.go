@@ -27,6 +27,9 @@ type AccountKeeperI interface {
 	// Check if an account exists in the store.
 	HasAccount(sdk.Context, sdk.AccAddress) bool
 
+	// Check if an account is a module account
+	IsModuleAccount(sdk.Context, sdk.AccAddress) bool
+
 	// Retrieve an account from the store.
 	GetAccount(sdk.Context, sdk.AccAddress) types.AccountI
 
