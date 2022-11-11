@@ -31,6 +31,16 @@ func (ak AccountKeeper) HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 	return store.Has(types.AddressStoreKey(addr))
 }
 
+// IsModuleAccount implements AccountKeeperI.
+func (ak AccountKeeper) IsModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
+	acc := ak.GetAccount(ctx, addr)
+	if acc != nil {
+		_, isModuleAccount := acc.(types.ModuleAccountI)
+		return isModuleAccount
+	}
+	return false
+}
+
 // GetAccount implements AccountKeeperI.
 func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.AccountI {
 	store := ctx.KVStore(ak.key)
