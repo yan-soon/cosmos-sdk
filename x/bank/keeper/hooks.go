@@ -28,3 +28,23 @@ func (keeper BaseSendKeeper) BeforeSend(ctx sdk.Context, fromAddr sdk.AccAddress
 	return nil
 
 }
+
+func (keeper BaseSendKeeper) BeforeMultiSend(ctx sdk.Context, inputs []types.Input, outputs []types.Output) error {
+	if keeper.hooks != nil {
+		err := keeper.hooks.BeforeMultiSend(ctx, inputs, outputs)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (keeper BaseSendKeeper) AfterMultiSend(ctx sdk.Context, inputs []types.Input, outputs []types.Output) error {
+	if keeper.hooks != nil {
+		err := keeper.hooks.AfterMultiSend(ctx, inputs, outputs)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

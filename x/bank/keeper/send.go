@@ -91,6 +91,9 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 	if err := types.ValidateInputsOutputs(inputs, outputs); err != nil {
 		return err
 	}
+	if err := k.BeforeMultiSend(ctx, inputs, outputs); err != nil {
+		return err
+	}
 
 	for _, in := range inputs {
 		inAddress, err := sdk.AccAddressFromBech32(in.Address)
@@ -138,6 +141,10 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 			defer telemetry.IncrCounter(1, "new", "account")
 			k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, outAddress))
 		}
+	}
+
+	if err := k.AfterMultiSend(ctx, inputs, outputs); err != nil {
+		return err
 	}
 
 	return nil
