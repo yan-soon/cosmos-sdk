@@ -247,9 +247,6 @@ func NewSimApp(
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
 	)
-	//bankKeeper.BaseSendKeeper = *bankKeeper.SetHooks(
-	//	banktypes.NewMutiSendHooks(),
-	//)
 	app.BankKeeper = &bankKeeper
 
 	stakingKeeper := stakingkeeper.NewKeeper(
@@ -294,7 +291,7 @@ func NewSimApp(
 
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-			// register the governance hooks
+		// register the governance hooks
 		),
 	)
 
