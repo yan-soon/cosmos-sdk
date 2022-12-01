@@ -246,14 +246,18 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+	v, err := st.tree.(*iavl.MutableTree).LoadVersion(targetVersion)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Printf("Deleting version: %v\n", targetVersion+1)
-	err := st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(targetVersion + 1)
+	err = st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(targetVersion + 1)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 	} else {
 		fmt.Println("Version deleted!")
 	}
-	return targetVersion, nil
+	return v, nil
 }
 
 // Implements types.KVStore.
