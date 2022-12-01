@@ -128,14 +128,12 @@ func (st *Store) Commit() types.CommitID {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "commit")
 
 	v := st.tree.Version()
-	if st.tree.VersionExists(v + 1) {
+	if v == 34604710 && st.tree.VersionExists(v+1) {
 		fmt.Printf("next version already exists: %v\n", v)
-		if v == 34604710 {
-			fmt.Printf("deleting version with issue")
-			e := st.tree.DeleteVersion(v + 1)
-			if e != nil {
-				panic(e)
-			}
+		v2, e := st.tree.LoadVersionForOverwriting(v)
+		fmt.Printf("overwritten to: %v\n", v2)
+		if e != nil {
+			panic(e)
 		}
 	}
 
