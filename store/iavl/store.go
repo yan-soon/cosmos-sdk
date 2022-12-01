@@ -130,11 +130,11 @@ func (st *Store) Commit() types.CommitID {
 	v := st.tree.Version()
 	if v == 34604710 && st.tree.VersionExists(v+1) {
 		fmt.Printf("next version already exists: %v\n", v)
-		e := st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(v)
+		e := st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(v + 1)
 		if e != nil {
 			panic(e)
 		}
-		fmt.Printf("deleted version\n")
+		fmt.Printf("deleted version: %v\n", v+1)
 	}
 
 	hash, version, err := st.tree.SaveVersion()
