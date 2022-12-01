@@ -237,8 +237,8 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
 	i, e := st.tree.LoadVersionForOverwriting(targetVersion)
-	fmt.Printf("Deleting version: %v", targetVersion)
-	st.tree.DeleteVersion(targetVersion)
+	fmt.Printf("Deleting version: %v", targetVersion+1)
+	st.tree.DeleteVersion(targetVersion + 1)
 	return i, e
 }
 
