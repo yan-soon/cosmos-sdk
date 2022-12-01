@@ -127,6 +127,18 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 func (st *Store) Commit() types.CommitID {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "commit")
 
+	v := st.tree.Version()
+	if st.tree.VersionExists(v + 1) {
+		fmt.Printf("next version already exists: %v\n", v)
+		if v == 34604710 {
+			fmt.Printf("deleting version with issue")
+			e := st.tree.DeleteVersion(v + 1)
+			if e != nil {
+				panic(e)
+			}
+		}
+	}
+
 	hash, version, err := st.tree.SaveVersion()
 	if err != nil {
 		panic(err)
