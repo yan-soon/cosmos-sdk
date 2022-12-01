@@ -130,11 +130,11 @@ func (st *Store) Commit() types.CommitID {
 	v := st.tree.Version()
 	if v == 34604710 && st.tree.VersionExists(v+1) {
 		fmt.Printf("next version already exists: %v\n", v)
-		v2, e := st.tree.LoadVersionForOverwriting(v)
-		fmt.Printf("overwritten to: %v\n", v2)
+		e := st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(v)
 		if e != nil {
 			panic(e)
 		}
+		fmt.Printf("deleted version\n")
 	}
 
 	hash, version, err := st.tree.SaveVersion()
@@ -246,15 +246,14 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
-	i, e := st.tree.LoadVersionForOverwriting(targetVersion)
 	fmt.Printf("Deleting version: %v\n", targetVersion+1)
-	err := st.tree.DeleteVersion(targetVersion + 1)
+	err := st.tree.(*iavl.MutableTree).DeleteVersionUnsafe(targetVersion + 1)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 	} else {
-		fmt.Println("Found something to delete!")
+		fmt.Println("Version deleted!")
 	}
-	return i, e
+	return targetVersion, nil
 }
 
 // Implements types.KVStore.
