@@ -236,7 +236,10 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
-	return st.tree.LoadVersionForOverwriting(targetVersion)
+	i, e := st.tree.LoadVersionForOverwriting(targetVersion)
+	fmt.Printf("Deleting version: %v", targetVersion)
+	st.tree.DeleteVersion(targetVersion)
+	return i, e
 }
 
 // Implements types.KVStore.
