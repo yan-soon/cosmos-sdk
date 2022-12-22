@@ -155,7 +155,7 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 // Sender and recipient address will be mapped to their corresponding cosmos addresses should they already be mapped
 // Creates new account only if there is no mapping available for the recipient address AND recipient address account absent
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	err := k.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
+	err := k.BeforeSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 		k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
 	}
 
-	err = k.hooks.AfterSend(ctx, fromAddr, toAddr, amt)
+	err = k.AfterSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
 		return err
 	}
