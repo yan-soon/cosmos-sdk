@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -28,6 +29,9 @@ type AccountKeeperI interface {
 	// Check if an account is a module account
 	IsModuleAccount(sdk.Context, sdk.AccAddress) bool
 
+	// Check if an account exists in the store based on address directly, doesn't check for mapping.
+	HasExactAccount(sdk.Context, sdk.AccAddress) bool
+
 	// Retrieve an account from the store.
 	GetAccount(sdk.Context, sdk.AccAddress) types.AccountI
 
@@ -48,6 +52,27 @@ type AccountKeeperI interface {
 
 	// Fetch the next account number, and increment the internal counter.
 	GetNextAccountNumber(sdk.Context) uint64
+
+	// Fetch the corresponding eth address for a given cosmos addr
+	GetCorrespondingEthAddressIfExists(ctx sdk.Context, cosmosAddr sdk.AccAddress) (correspondingEthAddr sdk.AccAddress)
+
+	// Fetch the corresponding eth address for a given eth addr
+	GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress)
+
+	// Iterate over eth-cosmos address mapping, calling the provided function. Stop iteration when it returns true
+	IterateEthToCosmosAddressMapping(sdk.Context, func(ethAddress, cosmosAddress sdk.AccAddress) bool)
+
+	// Iterate over cosmos-eth address mapping, calling the provided function. Stop iteration when it returns true
+	IterateCosmosToEthAddressMapping(sdk.Context, func(cosmosAddress, ethAddress sdk.AccAddress) bool)
+
+	// Sets both cosmos to eth and eth to cosmos mapping (2 way)
+	SetCorrespondingAddresses(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress)
+
+	// Adds address key value to cosmos-eth mapping
+	AddToCosmosToEthAddressMap(ctx sdk.Context, cosmosAddr sdk.AccAddress, ethAddr sdk.AccAddress)
+
+	// Adds address key value to eth-cosmos mapping
+	AddToEthToCosmosAddressMap(ctx sdk.Context, ethAddr sdk.AccAddress, cosmosAddr sdk.AccAddress)
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)
@@ -238,3 +263,9 @@ func (ak AccountKeeper) UnmarshalAccount(bz []byte) (types.AccountI, error) {
 
 // GetCodec return codec.Codec object used by the keeper
 func (ak AccountKeeper) GetCodec() codec.BinaryCodec { return ak.cdc }
+
+// Store fetches the permanent store
+func (ak AccountKeeper) Store(ctx sdk.Context, key string) prefix.Store {
+	mainStore := ctx.KVStore(ak.key)
+	return prefix.NewStore(mainStore, types.KeyPrefix(key))
+}

@@ -305,6 +305,7 @@ func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metada
 // SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
 // It will panic if the module account does not exist. An error is returned if
 // the recipient address is black-listed or if sending the tokens fails.
+// Recipient address will be mapped to the corresponding cosmos acc if mapping is present for an eth address
 func (k BaseKeeper) SendCoinsFromModuleToAccount(
 	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
 ) error {
@@ -313,11 +314,13 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
 	}
 
-	if k.BlockedAddr(recipientAddr) {
+	address := k.getMappedAccountAddressIfExists(ctx, recipientAddr)
+
+	if k.BlockedAddr(address) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
 	}
 
-	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
+	return k.SendCoins(ctx, senderAddr, address, amt)
 }
 
 // SendCoinsFromModuleToModule transfers coins from a ModuleAccount to another.
@@ -340,6 +343,7 @@ func (k BaseKeeper) SendCoinsFromModuleToModule(
 
 // SendCoinsFromAccountToModule transfers coins from an AccAddress to a ModuleAccount.
 // It will panic if the module account does not exist.
+// Sender address will be mapped to the corresponding cosmos acc if mapping is present for an eth address
 func (k BaseKeeper) SendCoinsFromAccountToModule(
 	ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins,
 ) error {
@@ -538,4 +542,13 @@ func (k BaseViewKeeper) IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bo
 			break
 		}
 	}
+}
+
+// Get mapped cosmos account address if exists
+func (k BaseViewKeeper) getMappedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
+	acct := k.ak.GetAccount(ctx, addr)
+	if acct == nil {
+		return addr
+	}
+	return acct.GetAddress()
 }
