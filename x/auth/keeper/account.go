@@ -54,6 +54,9 @@ func (ak AccountKeeper) HasAccountAddressByID(ctx sdk.Context, id uint64) bool {
 
 // GetAccount implements AccountKeeperI.
 func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.AccountI {
+	if addr == nil {
+		return nil
+	}
 	store := ctx.KVStore(ak.key)
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
