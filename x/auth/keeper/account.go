@@ -28,6 +28,9 @@ func (ak AccountKeeper) NewAccount(ctx sdk.Context, acc types.AccountI) types.Ac
 // AccountExists implements AccountKeeperI.
 // Check if an account exists in the store, includes check for mapping.
 func (ak AccountKeeper) AccountExists(ctx sdk.Context, addr sdk.AccAddress) bool {
+	if addr == nil {
+		return false
+	}
 	store := ctx.KVStore(ak.key)
 	if !store.Has(types.AddressStoreKey(addr)) {
 		cosmosAddr := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr)
