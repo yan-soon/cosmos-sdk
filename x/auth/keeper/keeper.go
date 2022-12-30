@@ -26,11 +26,11 @@ type AccountKeeperI interface {
 	// Return a new account with the next account number. Does not save the new account to the store.
 	NewAccount(sdk.Context, types.AccountI) types.AccountI
 
-	// Check if an account exists in the store, includes check for mapping.
-	AccountExists(sdk.Context, sdk.AccAddress) bool
+	// Check if an account exists in the store.
+	HasAccount(sdk.Context, sdk.AccAddress) bool
 
 	// Check if an account exists in the store based on address directly, doesn't check for mapping.
-	HasAccount(sdk.Context, sdk.AccAddress) bool
+	HasExactAccount(sdk.Context, sdk.AccAddress) bool
 
 	// Retrieve an account from the store.
 	GetAccount(sdk.Context, sdk.AccAddress) types.AccountI
