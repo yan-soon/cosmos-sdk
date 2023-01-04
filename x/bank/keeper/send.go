@@ -309,7 +309,7 @@ func (k BaseSendKeeper) setBalance(ctx sdk.Context, addr sdk.AccAddress, balance
 	if !balance.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, balance.String())
 	}
-	addressIfExists := k.getMappedAccountAddressIfExists(ctx, addr)
+	addressIfExists := k.ak.GetMappedAccountAddressIfExists(ctx, addr)
 
 	accountStore := k.getAccountStore(ctx, addressIfExists)
 	denomPrefixStore := k.getDenomAddressPrefixStore(ctx, balance.Denom)

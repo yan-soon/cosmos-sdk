@@ -73,6 +73,9 @@ type AccountKeeperI interface {
 
 	// Adds address key value to eth-cosmos mapping
 	AddToEthToCosmosAddressMap(ctx sdk.Context, ethAddr sdk.AccAddress, cosmosAddr sdk.AccAddress)
+
+	// Gets mapped cosmos account address if exists , else returns address passed in
+	GetMappedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)
