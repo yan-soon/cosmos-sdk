@@ -314,7 +314,7 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
 	}
 
-	address := k.getMappedAccountAddressIfExists(ctx, recipientAddr)
+	address := k.ak.GetMappedAccountAddressIfExists(ctx, recipientAddr)
 
 	if k.BlockedAddr(address) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)

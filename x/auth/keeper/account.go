@@ -179,3 +179,12 @@ func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb fun
 		}
 	}
 }
+
+// GetMappedAccountAddressIfExists gets mapped cosmos account address if exists , else returns address passed in
+func (ak AccountKeeper) GetMappedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
+	acct := ak.GetAccount(ctx, addr)
+	if acct == nil {
+		return addr
+	}
+	return acct.GetAddress()
+}
