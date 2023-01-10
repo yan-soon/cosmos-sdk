@@ -62,7 +62,7 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 // Gets all balances from the mapped cosmos account if there is.
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
-	address := k.ak.GetMappedAccountAddressIfExists(ctx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, addr)
 	k.IterateAccountBalances(ctx, address, func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
@@ -102,7 +102,7 @@ func (k BaseViewKeeper) GetAccountsBalances(ctx sdk.Context) []types.Balance {
 // Returns balance of mapped cosmos account if present for eth address
 func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 
-	address := k.ak.GetMappedAccountAddressIfExists(ctx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, addr)
 
 	accountStore := k.getAccountStore(ctx, address)
 
@@ -120,7 +120,7 @@ func (k BaseViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom s
 // callback, iteration is halted.
 func (k BaseViewKeeper) IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(sdk.Coin) bool) {
 
-	address := k.ak.GetMappedAccountAddressIfExists(ctx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, addr)
 	accountStore := k.getAccountStore(ctx, address)
 
 	iterator := accountStore.Iterator(nil, nil)
