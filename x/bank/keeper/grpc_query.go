@@ -57,7 +57,7 @@ func (k BaseKeeper) AllBalances(ctx context.Context, req *types.QueryAllBalances
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	balances := sdk.NewCoins()
-	address := k.ak.GetMappedAccountAddressIfExists(sdkCtx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(sdkCtx, addr)
 	accountStore := k.getAccountStore(sdkCtx, address)
 
 	pageRes, err := query.Paginate(accountStore, req.Pagination, func(_, value []byte) error {
@@ -91,7 +91,7 @@ func (k BaseKeeper) SpendableBalances(ctx context.Context, req *types.QuerySpend
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	balances := sdk.NewCoins()
-	address := k.ak.GetMappedAccountAddressIfExists(sdkCtx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(sdkCtx, addr)
 	accountStore := k.getAccountStore(sdkCtx, address)
 	zeroAmt := sdk.ZeroInt()
 

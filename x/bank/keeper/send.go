@@ -286,7 +286,7 @@ func (k BaseSendKeeper) setBalance(ctx sdk.Context, addr sdk.AccAddress, balance
 	if !balance.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, balance.String())
 	}
-	address := k.ak.GetMappedAccountAddressIfExists(ctx, addr)
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, addr)
 
 	accountStore := k.getAccountStore(ctx, address)
 

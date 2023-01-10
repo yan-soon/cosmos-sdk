@@ -180,8 +180,8 @@ func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb fun
 	}
 }
 
-// GetMappedAccountAddressIfExists gets mapped cosmos account address if exists , else returns address passed in
-func (ak AccountKeeper) GetMappedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
+// GetMergedAccountAddressIfExists gets merged cosmos account address if exists , else returns address passed in
+func (ak AccountKeeper) GetMergedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
 	acct := ak.GetAccount(ctx, addr)
 	if acct == nil {
 		return addr
