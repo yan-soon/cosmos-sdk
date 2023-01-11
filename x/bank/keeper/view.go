@@ -62,8 +62,7 @@ func (k BaseViewKeeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk
 // Gets all balances from the mapped cosmos account if there is.
 func (k BaseViewKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	balances := sdk.NewCoins()
-	address := k.ak.GetMergedAccountAddressIfExists(ctx, addr)
-	k.IterateAccountBalances(ctx, address, func(balance sdk.Coin) bool {
+	k.IterateAccountBalances(ctx, addr, func(balance sdk.Coin) bool {
 		balances = balances.Add(balance)
 		return false
 	})
