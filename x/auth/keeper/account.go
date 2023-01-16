@@ -126,11 +126,17 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 }
 
 func (ak AccountKeeper) GetCorrespondingEthAddressIfExists(ctx sdk.Context, cosmosAddr sdk.AccAddress) (correspondingEthAddr sdk.AccAddress) {
+	if cosmosAddr == nil {
+		return nil
+	}
 	mapping := ak.Store(ctx, types.CosmosAddressToEthAddressKey)
 	return mapping.Get(cosmosAddr)
 }
 
 func (ak AccountKeeper) GetCorrespondingCosmosAddressIfExists(ctx sdk.Context, ethAddr sdk.AccAddress) (correspondingCosmosAddr sdk.AccAddress) {
+	if ethAddr == nil {
+		return nil
+	}
 	mapping := ak.Store(ctx, types.EthAddressToCosmosAddressKey)
 	return mapping.Get(ethAddr)
 
