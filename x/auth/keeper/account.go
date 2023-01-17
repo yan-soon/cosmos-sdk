@@ -172,10 +172,12 @@ func (ak AccountKeeper) IterateEthToCosmosAddressMapping(ctx sdk.Context, cb fun
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)))
-		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)):])
-		if cb(addressKey, iterator.Value()) {
-			break
+		//Guard to prevent out of index panic
+		if len(iterator.Key()) > len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)) {
+			addressKey := iterator.Key()[len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)):]
+			if cb(addressKey, iterator.Value()) {
+				break
+			}
 		}
 	}
 
@@ -186,11 +188,14 @@ func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb fun
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)))
-		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)):])
-		if cb(addressKey, iterator.Value()) {
-			break
+		//Guard to prevent out of index panic
+		if len(iterator.Key()) > len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)) {
+			addressKey := iterator.Key()[len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)):]
+			if cb(addressKey, iterator.Value()) {
+				break
+			}
 		}
+
 	}
 }
 
