@@ -172,23 +172,19 @@ func (ak AccountKeeper) IterateEthToCosmosAddressMapping(ctx sdk.Context, cb fun
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)))
-		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.EthAddressToCosmosAddressKey)):])
-		if cb(addressKey, iterator.Value()) {
+		if cb(iterator.Key(), iterator.Value()) {
 			break
 		}
 	}
 
 }
-func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb func(cosmosAddress, ethAddress sdk.AccAddress) bool) {
+func (ak AccountKeeper) IterateCosmosToEthAddressMapping(ctx sdk.Context, cb func(key []byte, ethAddress sdk.AccAddress) bool) {
 	store := ctx.KVStore(ak.key)
 	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefix(types.CosmosAddressToEthAddressKey))
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		addressKey := make([]byte, len(iterator.Key())-len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)))
-		copy(addressKey, iterator.Key()[len(types.KeyPrefix(types.CosmosAddressToEthAddressKey)):])
-		if cb(addressKey, iterator.Value()) {
+		if cb(iterator.Key(), iterator.Value()) {
 			break
 		}
 	}
