@@ -239,6 +239,25 @@ func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
 	return st.tree.LoadVersionForOverwriting(targetVersion)
 }
 
+// RollbackToVersion attempts to rollback a tree to a previously committed version,
+// deleting all versions greater than targetVersion.
+func (st *Store) RollbackToVersion(targetVersion int64) error {
+	tree := st.tree.(*iavl.MutableTree)
+	v, err := tree.LoadVersion(targetVersion)
+	if err != nil {
+		panic(err)
+	}
+	for deleteVersion := v + 1; tree.VersionExists(deleteVersion); deleteVersion += 1 {
+		st.logger.Info("Deleting version: %v\n", deleteVersion)
+		err = tree.DeleteVersionUnsafe(deleteVersion)
+		if err != nil {
+			return err
+		}
+		st.logger.Info("Deleted version : %v\n", deleteVersion)
+	}
+	return nil
+}
+
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
 	iterator, err := st.tree.Iterator(start, end, true)
