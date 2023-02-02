@@ -26,7 +26,6 @@ func (keeper BaseSendKeeper) BeforeSend(ctx sdk.Context, fromAddr sdk.AccAddress
 		}
 	}
 	return nil
-
 }
 
 func (keeper BaseSendKeeper) BeforeMultiSend(ctx sdk.Context, inputs []types.Input, outputs []types.Output) error {

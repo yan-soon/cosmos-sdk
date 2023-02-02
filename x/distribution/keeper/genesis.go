@@ -78,10 +78,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data types.GenesisState) {
 	}
 
 	moduleHoldings = moduleHoldings.Add(data.FeePool.CommunityPool...)
-	moduleHoldingsInt, _ := moduleHoldings.TruncateDecimal()
-
 	moduleHoldings = moduleHoldings.Add(data.FeePool.LiquidityProviderPool...)
-	moduleHoldingsInt, _ = moduleHoldings.TruncateDecimal()
+	moduleHoldingsInt, _ := moduleHoldings.TruncateDecimal()
 
 	// check if the module account exists
 	moduleAcc := k.GetDistributionAccount(ctx)
