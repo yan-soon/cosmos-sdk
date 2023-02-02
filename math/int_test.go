@@ -94,9 +94,6 @@ func (s *intTestSuite) TestIntPanic() {
 	s.Require().NotPanics(func() { math.NewIntFromBigInt(nil) })
 	s.Require().True(math.NewIntFromBigInt(nil).IsNil())
 
-	s.Require().NotPanics(func() { sdk.NewIntFromBigInt(nil) })
-	s.Require().True(sdk.NewIntFromBigInt(nil).IsNil())
-
 	// Division-by-zero check
 	s.Require().Panics(func() { i1.Quo(math.NewInt(0)) })
 

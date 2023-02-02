@@ -22,7 +22,7 @@ type Snapshotter interface {
 	// to determine which heights to retain until after the snapshot is complete.
 	SetSnapshotInterval(snapshotInterval uint64)
 
-	// Restore restores a state snapshot from the protobuf items read from the reader.
+	// Restore restores a state snapshot, taking snapshot chunk readers as input.
 	// If the ready channel is non-nil, it returns a ready signal (by being closed) once the
 	// restorer is ready to accept chunks.
 	Restore(height uint64, format uint32, protoReader protoio.Reader) (SnapshotItem, error)

@@ -51,10 +51,6 @@ ifeq (secp,$(findstring secp,$(COSMOS_BUILD_OPTIONS)))
   build_tags += libsecp256k1_sdk
 endif
 
-ifeq (secp,$(findstring secp,$(COSMOS_BUILD_OPTIONS)))
-  build_tags += libsecp256k1_sdk
-endif
-
 whitespace :=
 whitespace += $(whitespace)
 comma := ,
@@ -501,12 +497,11 @@ localnet-debug: localnet-stop localnet-build-dlv localnet-build-nodes
 ###############################################################################
 ###                                rosetta                                  ###
 ###############################################################################
-
+# builds rosetta test data dir
 rosetta-data:
 	-docker container rm data_dir_build
 	docker build -t rosetta-ci:latest -f contrib/rosetta/rosetta-ci/Dockerfile .
 	docker run --name data_dir_build -t rosetta-ci:latest sh /rosetta/data.sh
 	docker cp data_dir_build:/tmp/data.tar.gz "$(CURDIR)/contrib/rosetta/rosetta-ci/data.tar.gz"
 	docker container rm data_dir_build
-
 .PHONY: rosetta-data

@@ -395,8 +395,6 @@ We propose a plugin architecture to load and run `StreamingService` implementati
 loading/preloading system that is used to load, initialize, inject, run, and stop Cosmos-SDK plugins. Each plugin
 must implement the following interface:
 
-Each configured streamer will receive the
-
 ```go
 // Plugin is the base interface for all kinds of cosmos-sdk plugins
 // It will be included in interfaces of different Plugins

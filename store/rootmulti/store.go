@@ -624,9 +624,7 @@ func (rs *Store) GetStoreByName(name string) types.Store {
 // Query calls substore.Query with the same `req` where `req.Path` is
 // modified to remove the substore prefix.
 // Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
-// Special case: if `req.Path` is `/proofs`, the commit hash is included
-// as response value. In addition, proofs of every store are appended to the response for
-// the requested height
+// TODO: add proof for `multistore -> substore`.
 func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	path := req.Path
 	storeName, subpath, err := parsePath(path)
@@ -678,7 +676,6 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
 // starting a new chain at an arbitrary height.
-// NOTE: this never errors. Can we fix the function signature ?
 func (rs *Store) SetInitialVersion(version int64) error {
 	rs.initialVersion = version
 

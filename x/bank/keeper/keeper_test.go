@@ -16,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
@@ -72,7 +71,7 @@ type IntegrationTestSuite struct {
 	queryClient types.QueryClient
 }
 
-func (suite *IntegrationTestSuite) initKeepersWithmAccPerms(blockedAddrs map[string]bool) (authkeeper.AccountKeeper, keeper.BaseKeeper) {
+func (suite *IntegrationTestSuite) initKeepersWithmAccPerms(blockedAddrs map[string]bool) (authkeeper.AccountKeeper, *keeper.BaseKeeper) {
 	app := suite.app
 	maccPerms := simapp.GetMaccPerms()
 	appCodec := simapp.MakeTestEncodingConfig().Codec
@@ -91,7 +90,7 @@ func (suite *IntegrationTestSuite) initKeepersWithmAccPerms(blockedAddrs map[str
 		app.GetSubspace(types.ModuleName), blockedAddrs,
 	)
 
-	return authKeeper, keeper
+	return authKeeper, &keeper
 }
 
 func (suite *IntegrationTestSuite) SetupTest() {
@@ -1054,8 +1053,9 @@ func (suite *IntegrationTestSuite) TestBalanceTrackingEvents() {
 		authtypes.ProtoBaseAccount, maccPerms, sdk.Bech32MainPrefix,
 	)
 
-	suite.app.BankKeeper = keeper.NewBaseKeeper(suite.app.AppCodec(), suite.app.GetKey(types.StoreKey),
+	bankKeeper := keeper.NewBaseKeeper(suite.app.AppCodec(), suite.app.GetKey(types.StoreKey),
 		suite.app.AccountKeeper, suite.app.GetSubspace(types.ModuleName), nil)
+	suite.app.BankKeeper = &bankKeeper
 
 	// set account with multiple permissions
 	suite.app.AccountKeeper.SetModuleAccount(suite.ctx, multiPermAcc)
@@ -1215,8 +1215,9 @@ func (suite *IntegrationTestSuite) TestMintCoinRestrictions() {
 	}
 
 	for _, test := range tests {
-		suite.app.BankKeeper = keeper.NewBaseKeeper(suite.app.AppCodec(), suite.app.GetKey(types.StoreKey),
+		bankKeeper := keeper.NewBaseKeeper(suite.app.AppCodec(), suite.app.GetKey(types.StoreKey),
 			suite.app.AccountKeeper, suite.app.GetSubspace(types.ModuleName), nil).WithMintCoinsRestriction(keeper.MintingRestrictionFn(test.restrictionFn))
+		suite.app.BankKeeper = &bankKeeper
 		for _, testCase := range test.testCases {
 			if testCase.expectPass {
 				suite.Require().NoError(

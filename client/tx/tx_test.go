@@ -106,13 +106,6 @@ func TestBuildSimTx(t *testing.T) {
 	_, _, err = kb.NewMnemonic("test_key1", keyring.English, path, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
 	require.NoError(t, err)
 
-	kb, err := keyring.New(t.Name(), "test", t.TempDir(), nil)
-	require.NoError(t, err)
-
-	path := hd.CreateHDPath(118, 0, 0).String()
-	_, _, err = kb.NewMnemonic("test_key1", keyring.English, path, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
-	require.NoError(t, err)
-
 	txf := tx.Factory{}.
 		WithTxConfig(txCfg).
 		WithAccountNumber(50).
@@ -298,7 +291,7 @@ func TestSign(t *testing.T) {
 
 	var prevSigs []signingtypes.SignatureV2
 	for _, tc := range testCases {
-		t.Run(tc.name, func(_ *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			err = tx.Sign(tc.txf, tc.from, tc.txb, tc.overwrite)
 			if len(tc.expectedPKs) == 0 {
 				requireT.Error(err)

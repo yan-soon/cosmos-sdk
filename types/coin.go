@@ -700,7 +700,6 @@ func (coins Coins) Find(denom string) (bool, Coin) {
 		return false, Coin{}
 
 	default:
-		// Binary search the amount of coins remaining
 		midIdx := len(coins) / 2 // 2:1, 3:1, 4:2
 		coin := coins[midIdx]
 		switch {

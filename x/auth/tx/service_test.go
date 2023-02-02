@@ -103,25 +103,6 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &tr))
 	s.Require().Equal(uint32(0), tr.Code)
 
-	out, err = bankcli.MsgSendExec(
-		val.ClientCtx,
-		val.Address,
-		val.Address,
-		sdk.NewCoins(
-			sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(1)),
-		),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=2", flags.FlagSequence),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
-		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
-		fmt.Sprintf("--gas=%d", flags.DefaultGasLimit),
-		fmt.Sprintf("--%s=foobar", flags.FlagNote),
-	)
-	s.Require().NoError(err)
-	var tr sdk.TxResponse
-	s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &tr))
-	s.Require().Equal(uint32(0), tr.Code)
-
 	s.Require().NoError(s.network.WaitForNextBlock())
 	height, err := s.network.LatestHeight()
 	s.Require().NoError(err)

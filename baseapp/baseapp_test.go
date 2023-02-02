@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
+	"github.com/gogo/protobuf/jsonpb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -413,14 +417,126 @@ func testLoadVersionHelper(t *testing.T, app *BaseApp, expectedHeight int64, exp
 	require.Equal(t, expectedID, lastID)
 }
 
+func TestOptionFunction(t *testing.T) {
+	logger := defaultLogger()
+	db := dbm.NewMemDB()
+	bap := NewBaseApp("starting name", logger, db, nil, testChangeNameHelper("new name"))
+	require.Equal(t, bap.name, "new name", "BaseApp should have had name changed via option function")
+}
+
+func testChangeNameHelper(name string) func(*BaseApp) {
+	return func(bap *BaseApp) {
+		bap.name = name
+	}
+}
+
+// Test that txs can be unmarshalled and read and that
+// correct error codes are returned when not
+func TestTxDecoder(t *testing.T) {
+	codec := codec.NewLegacyAmino()
+	registerTestCodec(codec)
+
+	app := newBaseApp(t.Name())
+	tx := newTxCounter(1, 0)
+	txBytes := codec.MustMarshal(tx)
+
+	dTx, err := app.txDecoder(txBytes)
+	require.NoError(t, err)
+
+	cTx := dTx.(txTest)
+	require.Equal(t, tx.Counter, cTx.Counter)
+}
+
+// Test that Info returns the latest committed state.
+func TestInfo(t *testing.T) {
+	app := newBaseApp(t.Name())
+
+	// ----- test an empty response -------
+	reqInfo := abci.RequestInfo{}
+	res := app.Info(reqInfo)
+
+	// should be empty
+	assert.Equal(t, "", res.Version)
+	assert.Equal(t, t.Name(), res.GetData())
+	assert.Equal(t, int64(0), res.LastBlockHeight)
+	require.Equal(t, []uint8(nil), res.LastBlockAppHash)
+	require.Equal(t, app.AppVersion(), res.AppVersion)
+	// ----- test a proper response -------
+	// TODO
+}
+
+func TestBaseAppOptionSeal(t *testing.T) {
+	app := setupBaseApp(t)
+
+	require.Panics(t, func() {
+		app.SetName("")
+	})
+	require.Panics(t, func() {
+		app.SetVersion("")
+	})
+	require.Panics(t, func() {
+		app.SetDB(nil)
+	})
+	require.Panics(t, func() {
+		app.SetCMS(nil)
+	})
+	require.Panics(t, func() {
+		app.SetInitChainer(nil)
+	})
+	require.Panics(t, func() {
+		app.SetBeginBlocker(nil)
+	})
+	require.Panics(t, func() {
+		app.SetEndBlocker(nil)
+	})
+	require.Panics(t, func() {
+		app.SetAnteHandler(nil)
+	})
+	require.Panics(t, func() {
+		app.SetAddrPeerFilter(nil)
+	})
+	require.Panics(t, func() {
+		app.SetIDPeerFilter(nil)
+	})
+	require.Panics(t, func() {
+		app.SetFauxMerkleMode()
+	})
+	require.Panics(t, func() {
+		app.SetRouter(NewRouter())
+	})
+}
+
 func TestSetMinGasPrices(t *testing.T) {
 	minGasPrices := sdk.DecCoins{sdk.NewInt64DecCoin("stake", 5000)}
 	app := newBaseApp(t.Name(), SetMinGasPrices(minGasPrices.String()))
 	require.Equal(t, minGasPrices, app.minGasPrices)
 }
 
-func TestGetMaximumBlockGas(t *testing.T) {
-	app := setupBaseApp(t)
+func TestInitChainer(t *testing.T) {
+	name := t.Name()
+	// keep the db and logger ourselves so
+	// we can reload the same  app later
+	db := dbm.NewMemDB()
+	logger := defaultLogger()
+	app := NewBaseApp(name, logger, db, nil)
+	capKey := sdk.NewKVStoreKey("main")
+	capKey2 := sdk.NewKVStoreKey("key2")
+	app.MountStores(capKey, capKey2)
+
+	// set a value in the store on init chain
+	key, value := []byte("hello"), []byte("goodbye")
+	var initChainer sdk.InitChainer = func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+		store := ctx.KVStore(capKey)
+		store.Set(key, value)
+		return abci.ResponseInitChain{}
+	}
+
+	query := abci.RequestQuery{
+		Path: "/store/main/key",
+		Data: key,
+	}
+
+	// initChainer is nil - nothing happens
 	app.InitChain(abci.RequestInitChain{})
 	res := app.Query(query)
 	require.Equal(t, 0, len(res.Value))
@@ -664,14 +780,18 @@ func anteHandlerTxTest(t *testing.T, capKey storetypes.StoreKey, storeKey []byte
 		store := ctx.KVStore(capKey)
 		txTest := tx.(txTest)
 
-	app.StoreConsensusParams(ctx, &abci.ConsensusParams{Block: &abci.BlockParams{MaxGas: 0}})
-	require.Equal(t, uint64(0), app.getMaximumBlockGas(ctx))
+		if txTest.FailOnAnte {
+			return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "ante handler failure")
+		}
 
-	app.StoreConsensusParams(ctx, &abci.ConsensusParams{Block: &abci.BlockParams{MaxGas: -1}})
-	require.Equal(t, uint64(0), app.getMaximumBlockGas(ctx))
+		_, err := incrementingCounter(t, store, storeKey, txTest.Counter)
+		if err != nil {
+			return ctx, err
+		}
 
-	app.StoreConsensusParams(ctx, &abci.ConsensusParams{Block: &abci.BlockParams{MaxGas: 5000000}})
-	require.Equal(t, uint64(5000000), app.getMaximumBlockGas(ctx))
+		ctx.EventManager().EmitEvents(
+			counterEvent("ante_handler", txTest.Counter),
+		)
 
 		ctx = ctx.WithPriority(testTxPriority)
 
@@ -679,12 +799,12 @@ func anteHandlerTxTest(t *testing.T, capKey storetypes.StoreKey, storeKey []byte
 	}
 }
 
-func TestListSnapshots(t *testing.T) {
-	type setupConfig struct {
-		blocks            uint64
-		blockTxs          int
-		snapshotInterval  uint64
-		snapshotKeepEvery uint32
+func counterEvent(evType string, msgCount int64) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			evType,
+			sdk.NewAttribute("update_counter", fmt.Sprintf("%d", msgCount)),
+		),
 	}
 }
 
@@ -694,33 +814,39 @@ func handlerMsgCounter(t *testing.T, capKey storetypes.StoreKey, deliverKey []by
 		store := ctx.KVStore(capKey)
 		var msgCount int64
 
-	app, _ := setupBaseAppWithSnapshots(t, 2, 5)
+		switch m := msg.(type) {
+		case *msgCounter:
+			if m.FailOnHandler {
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message handler failure")
+			}
 
-	expected := abci.ResponseListSnapshots{Snapshots: []*abci.Snapshot{
-		{Height: 2, Format: 1, Chunks: 2},
-	}}
+			msgCount = m.Counter
+		case *msgCounter2:
+			msgCount = m.Counter
+		}
 
-	resp := app.ListSnapshots(abci.RequestListSnapshots{})
-	queryResponse := app.Query(abci.RequestQuery{
-		Path: "/app/snapshots",
-	})
+		ctx.EventManager().EmitEvents(
+			counterEvent(sdk.EventTypeMessage, msgCount),
+		)
 
-	queryListSnapshotsResp := abci.ResponseListSnapshots{}
-	err := json.Unmarshal(queryResponse.Value, &queryListSnapshotsResp)
-	require.NoError(t, err)
+		res, err := incrementingCounter(t, store, deliverKey, msgCount)
+		if err != nil {
+			return nil, err
+		}
 
-	for i, s := range resp.Snapshots {
-		querySnapshot := queryListSnapshotsResp.Snapshots[i]
-		// we check that the query snapshot and function snapshot are equal
-		// Then we check that the hash and metadata are not empty. We atm
-		// do not have a good way to generate the expected value for these.
-		assert.Equal(t, *s, *querySnapshot)
-		assert.NotEmpty(t, s.Hash)
-		assert.NotEmpty(t, s.Metadata)
-		// Set hash and metadata to nil, so we can check the other snapshot
-		// fields against expected
-		s.Hash = nil
-		s.Metadata = nil
+		res.Events = ctx.EventManager().Events().ToABCIEvents()
+		return res, nil
+	}
+}
+
+func getIntFromStore(store sdk.KVStore, key []byte) int64 {
+	bz := store.Get(key)
+	if len(bz) == 0 {
+		return 0
+	}
+	i, err := binary.ReadVarint(bytes.NewBuffer(bz))
+	if err != nil {
+		panic(err)
 	}
 	return i
 }

@@ -182,6 +182,14 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	app.anteHandler = ah
 }
 
+func (app *BaseApp) SetMsgHandlerMiddleware(msgHandlerMiddleware sdk.MsgHandlerMiddleware) {
+	if app.sealed {
+		panic("SetMsgHandlerMiddleware() on sealed BaseApp")
+	}
+
+	app.msgHandlerMiddleware = msgHandlerMiddleware
+}
+
 func (app *BaseApp) SetPostHandler(ph sdk.AnteHandler) {
 	if app.sealed {
 		panic("SetPostHandler() on sealed BaseApp")

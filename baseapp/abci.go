@@ -266,6 +266,12 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	resultStr := "successful"
 
 	defer func() {
+		if app.deliverTxer != nil {
+			app.deliverTxer(app.deliverState.ctx, req, res)
+		}
+	}()
+
+	defer func() {
 		for _, streamingListener := range app.abciListeners {
 			if err := streamingListener.ListenDeliverTx(app.deliverState.ctx, req, res); err != nil {
 				panic(fmt.Errorf("DeliverTx listening hook failed: %w", err))
