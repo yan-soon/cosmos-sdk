@@ -155,6 +155,8 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
+// Sender and recipient address will be mapped to their corresponding cosmos addresses should they already be mapped
+// Creates new account only if there is no mapping available for the recipient address AND recipient address account absent
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	err := k.BeforeSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
@@ -307,8 +309,9 @@ func (k BaseSendKeeper) setBalance(ctx sdk.Context, addr sdk.AccAddress, balance
 	if !balance.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, balance.String())
 	}
+	addressIfExists := k.getMappedAccountAddressIfExists(ctx, addr)
 
-	accountStore := k.getAccountStore(ctx, addr)
+	accountStore := k.getAccountStore(ctx, addressIfExists)
 	denomPrefixStore := k.getDenomAddressPrefixStore(ctx, balance.Denom)
 
 	// x/bank invariants prohibit persistence of zero balances

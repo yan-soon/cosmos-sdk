@@ -57,7 +57,8 @@ func (k BaseKeeper) AllBalances(ctx context.Context, req *types.QueryAllBalances
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	balances := sdk.NewCoins()
-	accountStore := k.getAccountStore(sdkCtx, addr)
+	address := k.getMappedAccountAddressIfExists(sdkCtx, addr)
+	accountStore := k.getAccountStore(sdkCtx, address)
 
 	pageRes, err := query.Paginate(accountStore, req.Pagination, func(key, value []byte) error {
 		denom := string(key)
@@ -90,7 +91,8 @@ func (k BaseKeeper) SpendableBalances(ctx context.Context, req *types.QuerySpend
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	balances := sdk.NewCoins()
-	accountStore := k.getAccountStore(sdkCtx, addr)
+	address := k.getMappedAccountAddressIfExists(sdkCtx, addr)
+	accountStore := k.getAccountStore(sdkCtx, address)
 	zeroAmt := sdk.ZeroInt()
 
 	pageRes, err := query.Paginate(accountStore, req.Pagination, func(key, value []byte) error {
@@ -102,6 +104,7 @@ func (k BaseKeeper) SpendableBalances(ctx context.Context, req *types.QuerySpend
 	}
 
 	result := sdk.NewCoins()
+	//Mapping to cosmos account is done within this method so is safe to pass in the original address
 	spendable := k.SpendableCoins(sdkCtx, addr)
 
 	for _, c := range balances {
