@@ -1,6 +1,7 @@
 package cosmovisor
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,8 +42,25 @@ func (l Launcher) Run(args []string, stdout, stderr io.Writer) (bool, error) {
 	}
 	Logger.Info().Str("path", bin).Strs("args", args).Msg("running app")
 	cmd := exec.Command(bin, args...)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
+	outpipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return false, err
+	}
+
+	errpipe, err := cmd.StderrPipe()
+	if err != nil {
+		return false, err
+	}
+
+	scanOut := bufio.NewScanner(io.TeeReader(outpipe, stdout))
+	scanErr := bufio.NewScanner(io.TeeReader(errpipe, stderr))
+	// set scanner's buffer size to cfg.LogBufferSize, and ensure larger than bufio.MaxScanTokenSize otherwise fallback to bufio.MaxScanTokenSize
+	maxCapacity := bufio.MaxScanTokenSize
+	bufOut := make([]byte, maxCapacity)
+	bufErr := make([]byte, maxCapacity)
+	scanOut.Buffer(bufOut, maxCapacity)
+	scanErr.Buffer(bufErr, maxCapacity)
+
 	if err := cmd.Start(); err != nil {
 		return false, fmt.Errorf("launching process %s %s failed: %w", bin, strings.Join(args, " "), err)
 	}
@@ -56,6 +74,9 @@ func (l Launcher) Run(args []string, stdout, stderr io.Writer) (bool, error) {
 		}
 	}()
 
+	go func() {
+		l.WaitForDbError(cmd, scanOut, scanErr)
+	}()
 	needsUpdate, err := l.WaitForUpgradeOrExit(cmd)
 	if err != nil || !needsUpdate {
 		return false, err
@@ -72,6 +93,20 @@ func (l Launcher) Run(args []string, stdout, stderr io.Writer) (bool, error) {
 	}
 
 	return true, DoUpgrade(l.cfg, l.fw.currentInfo)
+}
+
+func (l Launcher) WaitForDbError(cmd *exec.Cmd, scanOut, scanErr *bufio.Scanner) {
+	waitScan := func(scan *bufio.Scanner) {
+		select {
+		case <-l.fw.MonitorDbError(scan):
+			Logger.Info().Msg("daemon shutting down in an attempt to restart")
+			_ = cmd.Process.Kill()
+		}
+	}
+
+	// wait for the scanners, which can trigger upgrade and kill cmd
+	go waitScan(scanOut)
+	go waitScan(scanErr)
 }
 
 // WaitForUpgradeOrExit checks upgrade plan file created by the app.

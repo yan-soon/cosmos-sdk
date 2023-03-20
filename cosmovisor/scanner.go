@@ -1,13 +1,17 @@
 package cosmovisor
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 )
+
+var persistenceErrorRegex = regexp.MustCompile(`Carbon Persistence Error`)
 
 // UpgradeInfo is the update details created by `x/upgrade/keeper.DumpUpgradeInfoToDisk`.
 type UpgradeInfo struct {
@@ -50,6 +54,26 @@ func newUpgradeFileWatcher(filename string, interval time.Duration) (*fileWatche
 
 func (fw *fileWatcher) Stop() {
 	close(fw.cancel)
+}
+
+func MatchDbError(line string) bool {
+	return persistenceErrorRegex.MatchString(line)
+}
+
+func (fw *fileWatcher) MonitorDbError(scan *bufio.Scanner) <-chan struct{} {
+	done := make(chan struct{})
+
+	go func() {
+		for scan.Scan() {
+			line := scan.Text()
+			matched := MatchDbError(line)
+			if matched {
+				done <- struct{}{}
+				return
+			}
+		}
+	}()
+	return done
 }
 
 // pools the filesystem to check for new upgrade currentInfo. currentName is the name
