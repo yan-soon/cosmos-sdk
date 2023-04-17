@@ -161,6 +161,8 @@ require (
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
+	github.com/cosmos/iavl => github.com/Switcheo/iavl v0.19.6-0.20230417100210-36cd2d2d01cf
+
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
@@ -171,7 +173,6 @@ replace (
 	github.com/jhump/protoreflect => github.com/jhump/protoreflect v1.9.0
 	// use cometbft
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.27
-		github.com/cosmos/iavl => github.com/Switcheo/iavl v0.19.5-0.20230202105155-b8581baed5b7
 )
 
 retract (
