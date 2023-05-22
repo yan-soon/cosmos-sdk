@@ -36,7 +36,7 @@ require (
 	github.com/jhump/protoreflect v1.12.1-0.20220721211354-060cc04fc18b
 	github.com/magiconair/properties v1.8.6
 	github.com/manifoldco/promptui v0.9.0
-	github.com/mattn/go-isatty v0.0.16
+	github.com/mattn/go-isatty v0.0.19
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/common v0.34.0
@@ -144,7 +144,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
-	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
