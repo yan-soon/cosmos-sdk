@@ -27,6 +27,7 @@ type AccountKeeper interface {
 	SetModuleAccount(ctx sdk.Context, macc types.ModuleAccountI)
 
 	GetMergedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress
+	GetMappedAddress(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress
 }
 type SendHooks interface {
 	BeforeSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error

@@ -76,6 +76,9 @@ type AccountKeeperI interface {
 
 	// Gets merged cosmos account address if exists , else returns address passed in
 	GetMergedAccountAddressIfExists(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress
+
+	// GetMappedAddress gets corresponding eth address if exists, else tries to get corresponding cosmos address. If both don't exist, it returns nil
+	GetMappedAddress(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress
 }
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)

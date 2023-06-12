@@ -217,3 +217,14 @@ func (ak AccountKeeper) GetMergedAccountAddressIfExists(ctx sdk.Context, addr sd
 	}
 	return acct.GetAddress()
 }
+
+// GetMappedAddress gets corresponding eth address if exists, else tries to get corresponding cosmos address. If both don't exist, it returns nil
+func (ak AccountKeeper) GetMappedAddress(ctx sdk.Context, addr sdk.AccAddress) sdk.AccAddress {
+	if address := ak.GetCorrespondingEthAddressIfExists(ctx, addr); address != nil {
+		return address
+	}
+	if address := ak.GetCorrespondingCosmosAddressIfExists(ctx, addr); address != nil {
+		return address
+	}
+	return nil
+}
