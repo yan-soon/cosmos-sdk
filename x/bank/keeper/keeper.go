@@ -153,9 +153,10 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 	}
 
 	balances := sdk.NewCoins()
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, delegatorAddr)
 
 	for _, coin := range amt {
-		balance := k.GetBalance(ctx, delegatorAddr, coin.GetDenom())
+		balance := k.GetBalance(ctx, address, coin.GetDenom())
 		if balance.IsLT(coin) {
 			return sdkerrors.Wrapf(
 				sdkerrors.ErrInsufficientFunds, "failed to delegate; %s is smaller than %s", balance, amt,
@@ -163,7 +164,7 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		}
 
 		balances = balances.Add(balance)
-		err := k.setBalance(ctx, delegatorAddr, balance.Sub(coin))
+		err := k.setBalance(ctx, address, balance.Sub(coin))
 		if err != nil {
 			return err
 		}
@@ -174,7 +175,7 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 	}
 	// emit coin spent event
 	ctx.EventManager().EmitEvent(
-		types.NewCoinSpentEvent(delegatorAddr, amt),
+		types.NewCoinSpentEvent(address, amt),
 	)
 
 	err := k.addCoins(ctx, moduleAccAddr, amt)
@@ -205,11 +206,13 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 		return err
 	}
 
-	if err := k.trackUndelegation(ctx, delegatorAddr, amt); err != nil {
+	address := k.ak.GetMergedAccountAddressIfExists(ctx, delegatorAddr)
+
+	if err := k.trackUndelegation(ctx, address, amt); err != nil {
 		return sdkerrors.Wrap(err, "failed to track undelegation")
 	}
 
-	err = k.addCoins(ctx, delegatorAddr, amt)
+	err = k.addCoins(ctx, address, amt)
 	if err != nil {
 		return err
 	}
