@@ -138,6 +138,9 @@ swagger = {{ .API.Swagger }}
 # Address defines the API server to listen on.
 address = "{{ .API.Address }}"
 
+# Oracle-address defines the API server to listen on for oracle service.
+oracle-address = "{{ .API.OracleAddress }}"
+
 # MaxOpenConnections defines the number of maximum open connections.
 max-open-connections = {{ .API.MaxOpenConnections }}
 
